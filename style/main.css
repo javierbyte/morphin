@@ -36,6 +36,22 @@ h1 {
   border-color: #d0d1d2;
 }
 
+.big-button-wrapper {
+  padding-top: 2rem;
+}
+
+.big-button {
+  line-height: 1;
+  padding: 0.5em 1em;
+  background: #2196F3;
+  color: #fff;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.big-button:hover {
+  background: #03A9F4;
+}
+
 .padding-2x {
 	padding: 2em;
 }

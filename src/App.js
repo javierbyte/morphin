@@ -3,6 +3,7 @@ var React = require('react')
 var _ = require('lodash')
 var Dropzone = require('react-dropzone')
 
+var download = require('./lib/download.js')
 var compressColor = require('./lib/compress-color.js')
 var readImageAsBase64 = require('./lib/read-image-as-base64.js');
 
@@ -111,9 +112,16 @@ export const App = React.createClass({
       let imageHeight = _.reduce(rgbArray, (res, pixel) => {return Math.max(res, pixel.y)}, 0)
       let imageWidth = _.reduce(rgbArray, (res, pixel) => {return Math.max(res, pixel.x)}, 0)
 
+      var activeImageCenter = _.find(rgbArray, {
+        x: Math.floor(imageWidth / 2),
+        y: Math.floor(imageHeight / 2)
+      })
+      var centerColor = activeImageCenter ? rgbToString(activeImageCenter.rgb) : '#fff'
+
       this.state.images[imageIndex] = {
         base64: base64,
         shadow: rgbArrayToShadow(rgbArray, this.state.scale, imageWidth, imageHeight),
+        centerColor: centerColor,
         rgbArray: rgbArray,
         height: imageHeight,
         width: imageWidth,
@@ -123,17 +131,45 @@ export const App = React.createClass({
     })
   },
 
+  onDownloadCode() {
+    var {images, activeImageIndex, scale} = this.state
+
+    var css = `
+<style>
+.animatedSprite {
+  height: ${scale}px;
+  width: ${scale}px;
+  margin-bottom: ${Math.max(images[0].height, images[1].height) * scale / 2}px;
+  margin-top: ${Math.max(images[0].height, images[1].height) * scale / 2}px;
+  margin-right: ${Math.max(images[0].width, images[1].width) * scale / 2}px;
+  margin-left: ${Math.max(images[0].width, images[1].width) * scale / 2}px;
+  transition: box-shadow 0.3s, background-color 0.3s;
+  box-shadow: ${images[0].shadow};
+  background-color: ${images[0].centerColor}
+}
+.animatedSprite-alt {
+  box-shadow: ${images[1].shadow};
+  background-color: ${images[1].centerColor}
+}
+</style>
+
+<div class="animatedSprite"></div>
+
+<script>
+  var sprite = document.querySelector(".animatedSprite");
+  window.setInterval(function() {
+    sprite.classList.toggle("animatedSprite-alt")
+  }, 1000)
+</script>
+    `
+    download(css, "css.txt", "text/css")
+  },
+
   render () {
     var {images, activeImageIndex, scale} = this.state
     var ready = images[0].shadow && images[1].shadow
 
     var activeImage = images[activeImageIndex]
-
-    var activeImageCenter = _.find(activeImage.rgbArray, {
-      x: Math.floor(activeImage.width / 2),
-      y: Math.floor(activeImage.height / 2)
-    })
-    var activeImageBackground = activeImageCenter ? rgbToString(activeImageCenter.rgb) : '#fff'
 
     return (
       <div className='padding-horizontal-2x'>
@@ -163,18 +199,25 @@ export const App = React.createClass({
         <div>
           {ready ? 'Result!' : 'Add two images to start animating!'}
         </div>
+        <br />
 
         {ready && (
           <div className='pixel' style={{
             height: scale,
             width: scale,
             boxShadow: activeImage.shadow,
-            backgroundColor: activeImageBackground,
+            backgroundColor: activeImage.centerColor,
             marginBottom: Math.max(images[0].height, images[1].height) * scale / 2,
             marginTop: Math.max(images[0].height, images[1].height) * scale / 2,
             marginRight: Math.max(images[0].width, images[1].width) * scale / 2,
             marginLeft: Math.max(images[0].width, images[1].width) * scale / 2
           }} />
+        )}
+
+        {ready && (
+          <div className='big-button-wrapper'>
+            <a className="big-button" onClick={this.onDownloadCode}>Download code!</a>
+          </div>
         )}
 
       </div>
