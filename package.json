@@ -38,12 +38,10 @@
     "webpack-hot-middleware": "^2.0.0"
   },
   "dependencies": {
-    "axios": "^0.9.1",
     "base64-image-utils": "^0.1.1",
     "lodash": "^3.10.1",
     "react": "^0.13.0",
     "react-dropzone": "^2.2.1",
-    "superagent": "^1.8.2",
     "tinycolor2": "^1.1.2"
   }
 }

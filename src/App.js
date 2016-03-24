@@ -1,6 +1,4 @@
 var React = require('react')
-var tinycolor = require('tinycolor2')
-var superagent = require('superagent')
 
 var _ = require('lodash')
 var Dropzone = require('react-dropzone')
@@ -13,13 +11,21 @@ var defaultSprites = {
     name: 'Charizard',
     sprites: ['char1.png', 'char2.png']
   },
+  mario: {
+    name: 'Mario',
+    sprites: ['mario1.png', 'mario2.png']
+  },
   pikachu: {
     name: 'Pikachu',
     sprites: ['pikachu.png', 'raichu.png']
   },
-  mario: {
-    name: 'Mario',
-    sprites: ['mario1.png', 'mario2.png']
+  yoshi: {
+    name: 'Yoshi',
+    sprites: ['yoshi1.png', 'yoshi2.png']
+  },
+  supermario: {
+    name: 'Super Mario',
+    sprites: ['supermario1.png', 'supermario2.png']
   }
 }
 
@@ -33,16 +39,11 @@ function rgbArrayToShadow(rgbArray, scale, imageWidth, imageHeight) {
   var halfWidth = Math.floor(imageWidth / 2)
   var halfHeight = Math.floor(imageHeight / 2)
 
-  return _.chain(rgbArray).sortBy('rgb', (rgb) => {
-    return tinycolor(rgbToString(rgb)).toHsv().h * 10 + tinycolor(rgbToString(rgb)).getBrightness()
+  return _.chain(rgbArray).filter(pixel => {
+    return !(pixel.rgb.a < 128 || pixel.rgb.r === 255 && pixel.rgb.g === 255 && pixel.rgb.b === 255)
   }).map(pixel => {
     var color = compressColor(rgbToString(pixel.rgb))
-
-    if (pixel.rgb.a === 0 || pixel.rgb.r === 255 && pixel.rgb.g === 255 && pixel.rgb.b === 255) {
-      return null
-    }
-
-    return `${color} ${pixel.x ? (pixel.x - halfWidth) * scale + 'px' : 0} ${pixel.y ? (pixel.y - halfHeight) * scale + 'px' : 0}`
+    return `${color} ${(pixel.x - halfWidth) * scale + 'px'} ${(pixel.y - halfHeight) * scale + 'px'}`
   }).compact().value().join(',')
 }
 
@@ -66,7 +67,7 @@ export const App = React.createClass({
       })
     }, 1000)
 
-    this.readDefaultSprite('pikachu')
+    this.readDefaultSprite('supermario')
   },
 
   readDefaultSprite(name) {
@@ -82,7 +83,6 @@ export const App = React.createClass({
   },
 
   readFile(imageIndex, file) {
-    console.warn({imageIndex, file})
     var fr = new window.FileReader()
 
     this.state.images[imageIndex].loadingImage = true;
@@ -108,8 +108,6 @@ export const App = React.createClass({
 
   loadBase64Sprite(imageIndex, base64) {
     base64ImageToRGBArray(base64, (err, rgbArray) => {
-      if (err) return console.error(err)
-
       let imageHeight = _.reduce(rgbArray, (res, pixel) => {return Math.max(res, pixel.y)}, 0)
       let imageWidth = _.reduce(rgbArray, (res, pixel) => {return Math.max(res, pixel.x)}, 0)
 
@@ -153,7 +151,6 @@ export const App = React.createClass({
 
         Or you can try with
         {_.map(defaultSprites, (sprite, spriteIndex) => {
-            console.warn({sprite})
             return (
               <a className='button' onClick={this.readDefaultSprite.bind(null, spriteIndex)} key={spriteIndex}>
                 {sprite.name}
