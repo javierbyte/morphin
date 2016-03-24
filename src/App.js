@@ -140,12 +140,12 @@ export const App = React.createClass({
         <div className='dropZone-container'>
           <Dropzone onDrop={this.onDrop.bind(null, 0)} className='dropZone'>
             {images[0].base64 && <img src={images[0].base64} />}
-            {images[0].loadingImage ? 'Processing...' : 'Click or drop and image here.'}
+            {images[0].loadingImage ? 'Processing...' : 'Click or drop a sprite here.'}
           </Dropzone>
 
           <Dropzone onDrop={this.onDrop.bind(null, 1)} className='dropZone'>
             {images[1].base64 && <img src={images[1].base64} />}
-            {images[1].loadingImage ? 'Processing...' : 'Click or drop and image here.'}
+            {images[1].loadingImage ? 'Processing...' : 'Click or drop a sprite here.'}
           </Dropzone>
         </div>
 
