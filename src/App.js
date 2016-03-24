@@ -92,7 +92,7 @@ export const App = React.createClass({
       const base64 = data.currentTarget.result
 
       if (base64.length > 10000) {
-        let confirmation = confirm('Your image is really big! Do you really want to try to try to animate it?')
+        let confirmation = confirm('Your image is really big! Do you really want to TRY to animate it?')
 
         if(!confirmation) {
           this.state.images[imageIndex].loadingImage = false
