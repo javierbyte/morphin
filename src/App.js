@@ -216,7 +216,7 @@ export const App = React.createClass({
 
         {ready && (
           <div className='big-button-wrapper'>
-            <a className="big-button" onClick={this.onDownloadCode}>Download code!</a>
+            <a className="big-button" onClick={this.onDownloadCode}>Download your animation code!</a>
           </div>
         )}
 
