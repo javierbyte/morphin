@@ -1,10 +1,27 @@
-var React = require('react');
-var tinycolor = require('tinycolor2');
+var React = require('react')
+var tinycolor = require('tinycolor2')
+var superagent = require('superagent')
 
 var _ = require('lodash')
 var Dropzone = require('react-dropzone')
 
-var compressColor = require('./lib/compress-color.js');
+var compressColor = require('./lib/compress-color.js')
+var readImageAsBase64 = require('./lib/read-image-as-base64.js');
+
+var defaultSprites = {
+  charizard: {
+    name: 'Charizard',
+    sprites: ['char1.png', 'char2.png']
+  },
+  pikachu: {
+    name: 'Pikachu',
+    sprites: ['pikachu.png', 'raichu.png']
+  },
+  mario: {
+    name: 'Mario',
+    sprites: ['mario1.png', 'mario2.png']
+  }
+}
 
 var {base64ImageToRGBArray} = require('base64-image-utils')
 
@@ -12,9 +29,12 @@ function rgbToString(rgb) {
   return rgb.a > 0 ? `rgb(${rgb.r},${rgb.g},${rgb.b})` : 'rgb(255,255,255)'
 }
 
-function rgbArrayToShadow(rgbArray, scale) {
+function rgbArrayToShadow(rgbArray, scale, imageWidth, imageHeight) {
+  var halfWidth = Math.floor(imageWidth / 2)
+  var halfHeight = Math.floor(imageHeight / 2)
+
   return _.chain(rgbArray).sortBy('rgb', (rgb) => {
-    return tinycolor(rgbToString(rgb)).toHsv().h
+    return tinycolor(rgbToString(rgb)).toHsv().h * 10 + tinycolor(rgbToString(rgb)).getBrightness()
   }).map(pixel => {
     var color = compressColor(rgbToString(pixel.rgb))
 
@@ -22,12 +42,11 @@ function rgbArrayToShadow(rgbArray, scale) {
       return null
     }
 
-    return `${color} ${pixel.x ? pixel.x * scale + 'px' : 0} ${pixel.y ? pixel.y * scale + 'px' : 0}`
+    return `${color} ${pixel.x ? (pixel.x - halfWidth) * scale + 'px' : 0} ${pixel.y ? (pixel.y - halfHeight) * scale + 'px' : 0}`
   }).compact().value().join(',')
 }
 
 export const App = React.createClass({
-
   getInitialState () {
     return {
       images: [{
@@ -35,25 +54,35 @@ export const App = React.createClass({
       }, {
         loadingImage: false
       }],
-      activeImage: 0,
-      scale: 5
+      activeImageIndex: 0,
+      scale: 6
     }
   },
 
   componentDidMount() {
     window.setInterval(() => {
       this.setState({
-        activeImage: this.state.activeImage === 0 ? 1 : 0
+        activeImageIndex: this.state.activeImageIndex === 0 ? 1 : 0
       })
     }, 1000)
+
+    this.readDefaultSprite('pikachu')
+  },
+
+  readDefaultSprite(name) {
+    _.forEach(defaultSprites[name].sprites, (sprite, spriteIndex) => {
+      readImageAsBase64('/sprites/' + sprite, (base64) => {
+        this.loadBase64Sprite(spriteIndex, base64)
+      })
+    })
   },
 
   onDrop (imageIndex, files) {
-    var file = files[0]
-    this.readFile(imageIndex, file)
+    this.readFile(imageIndex, files[0])
   },
 
   readFile(imageIndex, file) {
+    console.warn({imageIndex, file})
     var fr = new window.FileReader()
 
     this.state.images[imageIndex].loadingImage = true;
@@ -62,8 +91,8 @@ export const App = React.createClass({
     fr.onload = (data) => {
       const base64 = data.currentTarget.result
 
-      if (base64.length > 100000) {
-        let confirmation = confirm('Your image is really big, do you really want to try to convert it?')
+      if (base64.length > 10000) {
+        let confirmation = confirm('Your image is really big! Do you really want to try to try to animate it?')
 
         if(!confirmation) {
           this.state.images[imageIndex].loadingImage = false
@@ -72,47 +101,82 @@ export const App = React.createClass({
         }
       }
 
-      base64ImageToRGBArray(base64, (err, rgbArray) => {
-        if (err) return console.error(err)
-
-        this.state.images[imageIndex] = {
-          base64: base64,
-          shadow: rgbArrayToShadow(rgbArray, this.state.scale),
-          height: _.reduce(rgbArray, (res, pixel) => {return Math.max(res, pixel.y)}, 0),
-          loadingImage: false
-        }
-        this.forceUpdate()
-      })
+      this.loadBase64Sprite(imageIndex, base64);
     }
     fr.readAsDataURL(file)
   },
 
+  loadBase64Sprite(imageIndex, base64) {
+    base64ImageToRGBArray(base64, (err, rgbArray) => {
+      if (err) return console.error(err)
+
+      let imageHeight = _.reduce(rgbArray, (res, pixel) => {return Math.max(res, pixel.y)}, 0)
+      let imageWidth = _.reduce(rgbArray, (res, pixel) => {return Math.max(res, pixel.x)}, 0)
+
+      this.state.images[imageIndex] = {
+        base64: base64,
+        shadow: rgbArrayToShadow(rgbArray, this.state.scale, imageWidth, imageHeight),
+        rgbArray: rgbArray,
+        height: imageHeight,
+        width: imageWidth,
+        loadingImage: false
+      }
+      this.forceUpdate()
+    })
+  },
+
   render () {
-    var {images, activeImage, scale} = this.state
-    var ready = images[0].shadow && images[1].shadow;
+    var {images, activeImageIndex, scale} = this.state
+    var ready = images[0].shadow && images[1].shadow
+
+    var activeImage = images[activeImageIndex]
+
+    var activeImageCenter = _.find(activeImage.rgbArray, {
+      x: Math.floor(activeImage.width / 2),
+      y: Math.floor(activeImage.height / 2)
+    })
+    var activeImageBackground = activeImageCenter ? rgbToString(activeImageCenter.rgb) : '#fff'
 
     return (
       <div className='padding-horizontal-2x'>
         <div className='dropZone-container'>
           <Dropzone onDrop={this.onDrop.bind(null, 0)} className='dropZone'>
             {images[0].base64 && <img src={images[0].base64} />}
-            {images[0].loadingImage ? 'Processing...' : 'Drop the first image here.'}
+            {images[0].loadingImage ? 'Processing...' : 'Click or drop and image here.'}
           </Dropzone>
 
           <Dropzone onDrop={this.onDrop.bind(null, 1)} className='dropZone'>
             {images[1].base64 && <img src={images[1].base64} />}
-            {images[1].loadingImage ? 'Processing...' : 'Drop the second image here.'}
+            {images[1].loadingImage ? 'Processing...' : 'Click or drop and image here.'}
           </Dropzone>
         </div>
 
-        {ready ? 'Result!' : 'Add two images to start animating!'}
+        Or you can try with
+        {_.map(defaultSprites, (sprite, spriteIndex) => {
+            console.warn({sprite})
+            return (
+              <a className='button' onClick={this.readDefaultSprite.bind(null, spriteIndex)} key={spriteIndex}>
+                {sprite.name}
+              </a>
+            )
+          })
+        }
+
+        <br /><br />
+        <div>
+          {ready ? 'Result!' : 'Add two images to start animating!'}
+        </div>
 
         {ready && (
           <div className='pixel' style={{
             height: scale,
             width: scale,
-            boxShadow: images[activeImage].shadow,
-            marginBottom: Math.max(images[0].height, images[1].height) * scale
+            boxShadow: activeImage.shadow,
+            backgroundColor: activeImageBackground,
+            marginBottom: Math.max(images[0].height, images[1].height) * scale / 2,
+            marginTop: Math.max(images[0].height, images[1].height) * scale / 2,
+            marginRight: Math.max(images[0].width, images[1].width) * scale / 2,
+            marginLeft: Math.max(images[0].width, images[1].width) * scale / 2
           }} />
         )}
 

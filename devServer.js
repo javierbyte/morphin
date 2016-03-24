@@ -14,6 +14,7 @@ app.use(require('webpack-dev-middleware')(compiler, {
 app.use(require('webpack-hot-middleware')(compiler))
 
 app.use('/style', express.static(path.join(__dirname, 'style')))
+app.use('/sprites', express.static(path.join(__dirname, 'sprites')))
 
 app.get('*', function (req, res) {
   res.sendFile(path.join(__dirname, 'index.html'))

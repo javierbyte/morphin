@@ -19,6 +19,23 @@ h1 {
 	padding-bottom: 0.309em;
 }
 
+.button {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 0.9em;
+  line-height: 1;
+  padding: 0.5em;
+  border: 1px solid #f0f1f2;
+  border-radius: 2px;
+  margin-left: 0.5rem;
+  background: #fafbfc;
+  cursor: pointer;
+}
+.button:hover {
+  background: #f0f1f2;
+  border-color: #d0d1d2;
+}
+
 .padding-2x {
 	padding: 2em;
 }
@@ -28,7 +45,8 @@ h1 {
 }
 
 .pixel {
-	transition: box-shadow 0.3s;
+  background: transparent;
+	transition: box-shadow 0.4s, margin 0.4s, background 0.4s;
 }
 
 .dropZone-container {
@@ -47,7 +65,7 @@ h1 {
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	font-size: 0.9em;
+	font-size: 0.8em;
 }
 .dropZone img {
 	margin-bottom: 0.5em;
