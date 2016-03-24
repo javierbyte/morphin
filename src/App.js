@@ -71,7 +71,7 @@ export const App = React.createClass({
 
   readDefaultSprite(name) {
     _.forEach(defaultSprites[name].sprites, (sprite, spriteIndex) => {
-      readImageAsBase64('/sprites/' + sprite, (base64) => {
+      readImageAsBase64('sprites/' + sprite, (base64) => {
         this.loadBase64Sprite(spriteIndex, base64)
       })
     })
