@@ -1,7 +1,7 @@
 # morphin
-Create animated sprites with pure css!
+Create image morphing animations with css!
 
-<TODO>
+[![img2css](docs-assets/screenshot.jpg)](http://javier.xyz/morphin/)
 
 # Roadmap.
 * <s>Export the generated code.</s> DONE.
