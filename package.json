@@ -33,7 +33,7 @@
     "@pika/react-dom": "^16.13.1",
     "base64-image-utils": "^0.1.1",
     "capsize": "^1.1.0",
-    "lodash": "^3.10.1",
+    "lodash": "^4.17.19",
     "styled-components": "^5.2.0",
     "tinycolor2": "^1.1.2"
   }
