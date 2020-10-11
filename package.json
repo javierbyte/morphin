@@ -1,12 +1,11 @@
 {
   "name": "morphin",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Create animated sprites with pure css!",
   "scripts": {
-    "clean": "rimraf dist",
-    "build:webpack": "NODE_ENV=production webpack --config webpack.config.prod.js",
-    "build": "npm run clean && npm run build:webpack",
-    "start": "node devServer.js"
+    "dev": "vite",
+    "build": "vite build",
+    "deploy": "rm -rf dist && npm run build && touch dist/.nojekyll && gh-pages -d dist --dotfiles"
   },
   "repository": {
     "type": "git",
@@ -25,23 +24,17 @@
   },
   "homepage": "https://github.com/javierbyte/morphin",
   "devDependencies": {
-    "babel-core": "^5.4.7",
-    "babel-loader": "^5.1.2",
-    "babel-plugin-react-transform": "^1.1.1",
-    "express": "^4.13.3",
-    "react-transform-catch-errors": "^1.0.0",
-    "react-transform-hmr": "^1.0.0",
-    "redbox-react": "^1.0.1",
-    "rimraf": "^2.4.3",
-    "webpack": "^1.9.6",
-    "webpack-dev-middleware": "^1.2.0",
-    "webpack-hot-middleware": "^2.0.0"
+    "vite": "^1.0.0-rc.1",
+    "gh-pages": "^3.1.0",
+    "vite-plugin-react": "^3.0.0"
   },
   "dependencies": {
+    "@pika/react": "^16.13.1",
+    "@pika/react-dom": "^16.13.1",
     "base64-image-utils": "^0.1.1",
+    "capsize": "^1.1.0",
     "lodash": "^3.10.1",
-    "react": "^0.13.0",
-    "react-dropzone": "^2.2.1",
+    "styled-components": "^5.2.0",
     "tinycolor2": "^1.1.2"
   }
 }
