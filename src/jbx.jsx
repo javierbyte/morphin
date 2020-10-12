@@ -177,7 +177,8 @@ export const LinkButton = Styled.a({
 
 export const Dropzone = Styled.div({
   height: "150px",
-  width: "300px",
+  width: ({ width = "300px" }) => width,
+  "max-width": "320px",
   display: "flex",
   "text-align": "center",
   "align-items": "center",
@@ -188,7 +189,6 @@ export const Dropzone = Styled.div({
   color: "#000",
   padding: "0",
   cursor: "pointer",
-  "font-weight": "700",
   "& span": {
     width: "100%",
     cursor: "pointer",
@@ -213,7 +213,13 @@ export const Button = function (props) {
   return (
     <Box
       padding={0.5}
-      style={{ cursor: "pointer", display: "inline-block", backgroundColor: "#eee", boxShadow: "4px 4px 0 #ccc" }}
+      style={{
+        userSelect: "none",
+        cursor: "pointer",
+        display: "inline-block",
+        backgroundColor: "#eee",
+        boxShadow: "4px 4px 0 #ccc",
+      }}
       {...other}>
       <Text>{props.children}</Text>
     </Box>
