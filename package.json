@@ -1,7 +1,7 @@
 {
   "name": "morphin",
   "version": "1.0.0",
-  "description": "Create animated sprites with pure css!",
+  "description": "Tool that creates animated CSS transitions.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -15,7 +15,9 @@
     "react",
     "reactjs",
     "css",
-    "picture"
+    "picture",
+    "animation",
+    "img2css"
   ],
   "author": "Javier Bórquez <hi@javier.xyz> (http://github.com/javierbyte)",
   "license": "CC0-1.0",
@@ -24,16 +26,18 @@
   },
   "homepage": "https://github.com/javierbyte/morphin",
   "devDependencies": {
-    "vite": "^1.0.0-rc.1",
+    "eslint": "^7.11.0",
+    "eslint-plugin-react": "^7.21.4",
     "gh-pages": "^3.1.0",
+    "vite": "^1.0.0-rc.1",
     "vite-plugin-react": "^3.0.0"
   },
   "dependencies": {
-    "@pika/react": "^16.13.1",
-    "@pika/react-dom": "^16.13.1",
     "base64-image-utils": "^1.2.0",
     "capsize": "^1.1.0",
     "lodash": "^4.17.20",
+    "react": "npm:@pika/react@^16.13.1",
+    "react-dom": "npm:@pika/react-dom@^16.13.1",
     "styled-components": "^5.2.0",
     "tinycolor2": "^1.1.2"
   }

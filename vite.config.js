@@ -6,8 +6,7 @@ const reactPlugin = require("vite-plugin-react");
  */
 const config = {
 	jsx: "react",
-	plugins: [reactPlugin],
-	base: "https://javier.xyz/morphin"
+	base: "https://javier.xyz/morphin",
 };
 
 module.exports = config;

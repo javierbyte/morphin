@@ -2,14 +2,15 @@ import React from "react";
 import Styled from "styled-components";
 import capsize from "capsize";
 
-const SPACE = 16;
-const BASE_FONT_SIZE = 16;
+const SIZE = window.innerHeight > 640 ? 16 : 14;
+
+const SPACE = SIZE;
+const BASE_FONT_SIZE = SIZE;
 
 // const TEXT_MAIN_COLOR = "#aaabac";
 // const TEXT_HEADER_COLOR = "#fff";
 
 const TEXT_MAIN_COLOR = "#000";
-const TEXT_HEADER_COLOR = "#000";
 
 const fontMetrics = {
   capHeight: 1364,
@@ -19,7 +20,6 @@ const fontMetrics = {
 };
 
 const BaseText = Styled.div({
-  // "font-family": `-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif`,
   // color: TEXT_MAIN_COLOR,
 });
 
@@ -49,54 +49,76 @@ export const Text = Styled(BaseText)({
   }),
 });
 
+export const Range = Styled.input({
+  flex: 1,
+  width: "100%",
+  appearance: "none",
+  backgroundColor: "var(--accent-color)",
+  height: SPACE,
+  borderRadius: 0,
+  "&::-webkit-slider-thumb": {
+    appearance: "none",
+    boxShadow: "none",
+    borderRadius: 0,
+    height: SPACE * 2,
+    width: SPACE,
+    backgroundColor: "#000",
+  },
+  "&::-moz-range-thumb": {
+    appearance: "none",
+    boxShadow: "none",
+    borderRadius: 0,
+    height: SPACE * 2,
+    width: SPACE,
+    backgroundColor: "#000",
+  },
+  "&::-webkit-slider-runnable-track": {
+    appearance: "none",
+  },
+  ":focus": {
+    outline: "none",
+  },
+});
+
 export const HeaderH4 = Styled.h4({
-  "font-family": `-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif`,
   margin: 0,
   color: TEXT_MAIN_COLOR,
 
   letterSpacing: -0.11,
   fontWeight: 700,
-  color: TEXT_HEADER_COLOR,
   ...textProps({
     capHeight: BASE_FONT_SIZE,
     lineGap: BASE_FONT_SIZE,
   }),
 });
 export const HeaderH3 = Styled.h3({
-  "font-family": `-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif`,
   margin: 0,
   color: TEXT_MAIN_COLOR,
 
   letterSpacing: -0.22,
-  fontWeight: 700,
-  color: TEXT_HEADER_COLOR,
+  fontWeight: 400,
   ...textProps({
-    capHeight: BASE_FONT_SIZE * 1,
+    capHeight: BASE_FONT_SIZE * 1 * 1.25,
     lineGap: BASE_FONT_SIZE,
   }),
 });
 export const HeaderH2 = Styled.h2({
-  "font-family": `-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif`,
   margin: 0,
   color: TEXT_MAIN_COLOR,
 
   letterSpacing: -0.33,
   fontWeight: 400,
-  color: TEXT_HEADER_COLOR,
   ...textProps({
     capHeight: BASE_FONT_SIZE * 1.5,
     lineGap: 12,
   }),
 });
 export const HeaderH1 = Styled.h1({
-  "font-family": `-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif`,
-  margin: 0,
   color: TEXT_MAIN_COLOR,
 
   letterSpacing: -1,
   margin: "2px 0",
   fontWeight: 700,
-  color: TEXT_HEADER_COLOR,
   ...textProps({
     capHeight: BASE_FONT_SIZE * 3 - 4,
     lineGap: BASE_FONT_SIZE,
@@ -128,6 +150,8 @@ export function Space(props) {
 }
 
 export const Box = Styled.div({
+  flex: (props) => props.flex,
+  minWidth: (props) => props.minWidth,
   padding: ({ padding }) => {
     if (!padding) return `0`;
 
@@ -155,7 +179,6 @@ export const Inline = Styled.div({
 });
 
 export const LinkButton = Styled.a({
-  "font-family": `-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif`,
   capHeight: BASE_FONT_SIZE,
   color: "#3498db",
   cursor: "pointer",
@@ -163,7 +186,6 @@ export const LinkButton = Styled.a({
   borderTop: "1px solid #3498db10",
   borderBottom: "1px solid #0000",
   backgroundColor: "#3498db20",
-  display: "block",
   height: BASE_FONT_SIZE * 2,
   display: "flex",
   alignItems: "center",
@@ -176,8 +198,10 @@ export const LinkButton = Styled.a({
 });
 
 export const Dropzone = Styled.div({
-  height: "150px",
-  width: ({ width = "300px" }) => width,
+  height: "120px",
+  // width: ({ width = "300px" }) => width,
+  // width: "100%",
+  flex: 1,
   "max-width": "320px",
   display: "flex",
   "text-align": "center",
@@ -221,7 +245,7 @@ export const Button = function (props) {
         boxShadow: "4px 4px 0 #ccc",
       }}
       {...other}>
-      <Text>{props.children}</Text>
+      <Text>{children}</Text>
     </Box>
   );
 };

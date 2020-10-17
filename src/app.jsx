@@ -2,23 +2,35 @@ import React, { useEffect, useState } from "react";
 import Styled from "styled-components";
 
 import _ from "lodash";
-import download from "./lib/download.js";
-import compressColor from "./lib/compress-color.js";
+import compressColorRGB from "./lib/compress-color.js";
 import readImageAsBase64 from "./lib/read-image-as-base64.js";
-
-import Char1 from "./sprites/char1.png";
 
 import base64ImageUtils from "base64-image-utils";
 const { base64ImageToRGBArray } = base64ImageUtils;
 
-import { Button, HeaderH1, HeaderH2, HeaderH3, Text, Space, Box, A, Container, Dropzone, Inline } from "./jbx.jsx";
+import {
+  Button,
+  Range,
+  HeaderH1,
+  HeaderH3,
+  HeaderH2,
+  Text,
+  Space,
+  Box,
+  A,
+  Container,
+  Dropzone,
+  Inline,
+} from "./jbx.jsx";
+
+const LOG_SCALE_FACTOR = 2.2;
 
 const Textarea = Styled.textarea({
   "font-family": "monaco, monospace",
   border: "none",
   width: "100%",
   height: "256px",
-  "font-size": "13px",
+  "font-size": "12px",
   "line-height": "1.309",
   padding: "16px 18px",
   background: "#ecf0f1",
@@ -33,9 +45,21 @@ const defaultSprites = {
     name: "Yoshi",
     sprites: ["yoshi1.png", "yoshi2.png"],
   },
-  Charizard: {
-    name: "Charizard",
-    sprites: ["char1.png", "char2.png"],
+  "3 Dots": {
+    name: "3 Dots",
+    sprites: ["3dots1.png", "3dots2.png"],
+    scale: 8,
+    transition: 80,
+    alternate: false,
+    sortMethod: "Brightness",
+  },
+  Square: {
+    name: "Square",
+    sprites: ["square1.png", "square2.png"],
+    scale: 12,
+    transition: 100,
+    alternate: false,
+    sortMethod: "Brightness",
   },
   Mario: {
     name: "Mario",
@@ -44,10 +68,12 @@ const defaultSprites = {
   Pikachu: {
     name: "Pikachu",
     sprites: ["pikachu.png", "raichu.png"],
+    sortMethod: "Brightness",
   },
   Supermario: {
     name: "Super Mario",
     sprites: ["supermario1.png", "supermario2.png"],
+    sortMethod: "Horizontal",
   },
 };
 
@@ -81,44 +107,62 @@ function resizeImage(base64Str, maxMass = 64 * 50) {
   });
 }
 
-function rgbToString(rgb) {
-  return rgb.a > 0 ? `rgb(${rgb.r},${rgb.g},${rgb.b})` : "rgb(255,255,255)";
-}
+const SORT_METHODS = {
+  Diagonal: [
+    (color) => {
+      return Math.floor((color.x - color.y) / 3);
+    },
+    (color) => {
+      return color.rgb.r + color.rgb.g + color.rgb.b;
+    },
+  ],
+  Vertical: [
+    (color) => {
+      return color.x;
+    },
+  ],
+  Horizontal: [
+    (color) => {
+      return color.y;
+    },
+  ],
+  Brightness: [
+    (color) => {
+      return Math.floor((color.rgb.r + color.rgb.g + color.rgb.b) / 2);
+    },
+  ],
+};
 
-function rgbArrayToShadow(rgbArray, scale, imageWidth, imageHeight) {
-  var halfWidth = Math.floor(imageWidth / 2);
-  var halfHeight = Math.floor(imageHeight / 2);
-
+function rgbArrayToShadow(rgbArray, { sortMethod = "Brightness", scale = 1, translationX = 0, translationY = 0 }) {
   return _.chain(rgbArray)
     .filter((pixel) => {
-      return !(pixel.rgb.a < 128 || (pixel.rgb.r === 255 && pixel.rgb.g === 255 && pixel.rgb.b === 255));
+      return !(pixel.rgb.a < 1 || (pixel.rgb.r > 254 && pixel.rgb.g > 254 && pixel.rgb.b > 254));
     })
+    .sortBy(SORT_METHODS[sortMethod])
     .map((pixel) => {
-      const color = compressColor(rgbToString(pixel.rgb));
-      return `${color} ${pixel.x * scale + "px"} ${pixel.y * scale + "px"} 0 ${scale / 2 - 0.5}px`;
+      const color = compressColorRGB(pixel.rgb);
+      // return `${color} ${pixel.x * scale + translationX + scale}px ${pixel.y * scale + translationY + scale}px`;
+      return `${color} ${(pixel.x + 1) * scale}px ${(pixel.y + 1) * scale}px`;
     })
     .compact()
     .value()
     .join(",");
 }
 
-const Tabs = Styled.div({
-  borderBottom: "4px solid #000",
-});
+const Tabs = Styled.div({});
 
 const Tab = Styled.div({
   userSelect: "none",
   padding: 8,
   cursor: "pointer",
-  backgroundColor: (props) => (props.active ? "#000" : "#fff"),
+  backgroundColor: (props) => (props.active ? "#000" : props.info ? "#fff" : "#ecf0f1"),
   color: (props) => (props.active ? "#fff" : "#000"),
+  paddingLeft: (props) => (props.info ? 0 : undefined),
 });
 
-function saveFrame(path, { scale }, stateSet) {
+function saveFrame(path, config, stateSet) {
   readImageAsBase64(path, (base64) => {
     base64ImageToRGBArray(base64, (err, rgbArray) => {
-      const shadow = rgbArrayToShadow(rgbArray, scale, 64, 64);
-
       const maxY = rgbArray.reduce((res, rgb) => {
         return Math.max(res, rgb.y);
       }, -Infinity);
@@ -135,18 +179,16 @@ function saveFrame(path, { scale }, stateSet) {
 
       stateSet({
         src: base64,
-        shadow,
-        height: Math.abs(maxY - minY),
-        width: Math.abs(maxX - minX),
+        rgbArray,
+        height: Math.abs(maxY - minY) + 1,
+        width: Math.abs(maxX - minX) + 1,
       });
     });
   });
 }
 
-function saveFrame64(base64, { scale }, stateSet) {
+function saveFrame64(base64, config, stateSet) {
   base64ImageToRGBArray(base64, (err, rgbArray) => {
-    const shadow = rgbArrayToShadow(rgbArray, scale, 64, 64);
-
     const maxY = rgbArray.reduce((res, rgb) => {
       return Math.max(res, rgb.y);
     }, -Infinity);
@@ -163,27 +205,32 @@ function saveFrame64(base64, { scale }, stateSet) {
 
     stateSet({
       src: base64,
-      shadow,
-      height: Math.abs(maxY - minY),
-      width: Math.abs(maxX - minX),
+      rgbArray,
+      height: Math.abs(maxY - minY) + 1,
+      width: Math.abs(maxX - minX) + 1,
     });
   });
 }
 
 function App() {
-  const [currentSprite, currentSpriteSet] = useState("Yoshi");
+  const [animationSpeedSrc, animationSpeedSet] = useState(Math.round(Math.pow(1000, 1 / LOG_SCALE_FACTOR)));
+  const animationSpeed = Math.round(Math.pow(animationSpeedSrc, LOG_SCALE_FACTOR)) + 11 + 16;
+  const [animationTransition, animationTransitionSet] = useState(25);
+  const [alternateAnimation, alternateAnimationSet] = useState(true);
 
-  const [scale, scaleSet] = useState(3);
+  const [currentSprite, currentSpriteSet] = useState("Yoshi");
+  const [sortMethod, sortMethodSet] = useState("Vertical");
+  const [scale, scaleSet] = useState(5);
 
   const [spriteA, spriteASet] = useState({
     shadow: null,
-    height: 0,
-    width: 0,
+    height: 5,
+    width: 5,
   });
   const [spriteB, spriteBSet] = useState({
     shadow: null,
-    height: 0,
-    width: 0,
+    height: 5,
+    width: 5,
   });
 
   useEffect(() => {
@@ -191,26 +238,61 @@ function App() {
 
     saveFrame(`sprites/${defaultSprites[currentSprite].sprites[0]}`, { scale }, spriteASet);
     saveFrame(`sprites/${defaultSprites[currentSprite].sprites[1]}`, { scale }, spriteBSet);
+
+    // const { scale = 3, transition = 25, alternate = false } = defaultSprites[currentSprite];
+
+    spriteASet({
+      shadow: null,
+      height: 0,
+      width: 0,
+    });
+    spriteBSet({
+      shadow: null,
+      height: 0,
+      width: 0,
+    });
+
+    scaleSet(defaultSprites[currentSprite].scale || 3);
+    animationTransitionSet(defaultSprites[currentSprite].transition || 25);
+    alternateAnimationSet(
+      defaultSprites[currentSprite].alternate === undefined ? true : defaultSprites[currentSprite].alternate
+    );
+    sortMethodSet(defaultSprites[currentSprite].sortMethod || "Vertical");
   }, [currentSprite]);
+
+  const totalWidth = Math.max(spriteA.width, spriteB.width) * scale;
+  const totalHeight = Math.max(spriteA.height, spriteB.height) * scale;
 
   const css = `
 @keyframes morphin {
-  0%, 45% {
-    box-shadow: ${spriteA.shadow};
+  0%, ${50 - animationTransition / 2}% {
+    box-shadow: ${rgbArrayToShadow(spriteA.rgbArray, {
+      scale,
+      sortMethod,
+      translationX: totalWidth / -2,
+      translationY: totalHeight / -2,
+    })};
   }
-  55%, 100% {
-    box-shadow: ${spriteB.shadow};
+  ${50 + animationTransition / 2}%, 100% {
+    box-shadow: ${rgbArrayToShadow(spriteB.rgbArray, {
+      scale,
+      sortMethod,
+      translationX: totalWidth / -2,
+      translationY: totalHeight / -2,
+    })};
   }
 }
 
 .pixel {
-  height: 1px;
-  width: 1px;
-  margin: 0 ${Math.max(spriteA.width, spriteB.width) * scale}px ${Math.max(spriteA.height, spriteB.height) * scale}px 0;
-  animation: morphin 5s infinite alternate;
+  height: ${scale}px;
+  width: ${scale}px;
+  margin: ${-scale}px ${totalHeight + scale * 2}px ${totalWidth + scale * 2}px ${-scale}px;
+  animation: morphin ${animationSpeed}ms infinite${
+    alternateAnimation ? " alternate " : " "
+  }cubic-bezier(0.45, 0, 0.55, 1);
 }`.trim();
 
-  function onFileSelected(event, setFunction) {
+  function onFileSelected(event, setFunction, reverse) {
     currentSpriteSet(null);
     event.stopPropagation();
     event.preventDefault();
@@ -224,9 +306,9 @@ function App() {
     fr.onload = async (data) => {
       const base64src = data.currentTarget.result;
 
-      const [base64, info] = await resizeImage(base64src);
+      const [base64] = await resizeImage(base64src);
 
-      saveFrame64(base64, { scale }, setFunction);
+      saveFrame64(base64, { scale, reverse }, setFunction);
     };
     fr.readAsDataURL(file);
   }
@@ -244,11 +326,15 @@ function App() {
           <HeaderH1>morphin</HeaderH1>
         </Box>
         <Space h={1} />
-        <Text>Create image morphing animations with css!</Text>
+        <Text>
+          Tool that creates animated CSS transitions. Add sprites and get the code ready to paste in your site.
+        </Text>
         <Space h={2} />
-
         <Tabs>
           <Inline>
+            <Tab info>
+              <Text>Examples: </Text>
+            </Tab>
             {Object.keys(defaultSprites).map((spriteKey) => (
               <Tab
                 active={currentSprite === spriteKey}
@@ -261,30 +347,36 @@ function App() {
             ))}
           </Inline>
         </Tabs>
-
-        <Space h={1} w={1} />
+        <Space h={1} />
         <Inline>
           <Dropzone
             onDrop={(evt) => onFileSelected(evt, spriteASet)}
             onDragOver={eventIgnore}
             onDragEnter={eventIgnore}>
-            <Space h={0.5} />
             <div
               style={{
-                height: 32,
-                width: 32,
-                backgroundImage: `url(${spriteA.src})`,
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center",
-                backgroundSize: "contain",
-              }}
-            />
-            <Space h={1} />
-            <Text>Drop sprite here</Text>
+                display: "flex",
+                height: 48,
+                width: 48,
+                alignItems: "center",
+                alignContent: "center",
+                justifyContent: "center",
+              }}>
+              <img
+                style={{
+                  height: (32 / Math.max(spriteA.height, spriteA.width)) * spriteA.height,
+                  width: (32 / Math.max(spriteA.height, spriteA.width)) * spriteA.width,
+                  display: "block",
+                  imageRendering: "crisp-edges",
+                }}
+                src={spriteA.src}
+              />
+            </div>
+
+            <Text>Sprite 1</Text>
             <input
               type="file"
-              onChange={(evt) => onFileSelected(evt, spriteASet)}
-              multiple
+              onChange={(evt) => onFileSelected(evt, spriteASet, true)}
               accept="image/*"
               aria-label="Drop an image here, or click to select"
             />
@@ -296,23 +388,30 @@ function App() {
             onDrop={(evt) => onFileSelected(evt, spriteBSet)}
             onDragOver={eventIgnore}
             onDragEnter={eventIgnore}>
-            <Space h={0.5} />
             <div
               style={{
-                height: 32,
-                width: 32,
-                backgroundImage: `url(${spriteB.src})`,
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center",
-                backgroundSize: "contain",
-              }}
-            />
-            <Space h={1} />
-            <Text>Drop sprite here</Text>
+                display: "flex",
+                height: 48,
+                width: 48,
+                alignItems: "center",
+                alignContent: "center",
+                justifyContent: "center",
+              }}>
+              <img
+                style={{
+                  height: (32 / Math.max(spriteB.height, spriteB.width)) * spriteB.height,
+                  width: (32 / Math.max(spriteB.height, spriteB.width)) * spriteB.width,
+                  display: "block",
+                  imageRendering: "crisp-edges",
+                }}
+                src={spriteB.src}
+              />
+            </div>
+
+            <Text>Sprite 2</Text>
             <input
               type="file"
               onChange={(evt) => onFileSelected(evt, spriteBSet)}
-              multiple
               accept="image/*"
               aria-label="Drop an image here, or click to select"
             />
@@ -320,32 +419,121 @@ function App() {
         </Inline>
         <Space h={2} />
 
-        <HeaderH2>Result:</HeaderH2>
+        <HeaderH2>Preview</HeaderH2>
         <Space h={1} />
         <style>{css}</style>
         <div key={css} className="pixel" />
-
         <Space h={2} />
+        <Tabs>
+          <Inline>
+            <Tab info>
+              <Text>Pixel matching method:</Text>
+            </Tab>
+            {Object.keys(SORT_METHODS).map((sortMethodKey) => (
+              <Tab
+                active={sortMethod === sortMethodKey}
+                key={sortMethodKey}
+                onClick={() => {
+                  sortMethodSet(sortMethodKey);
+                }}>
+                <Text>{sortMethodKey}</Text>
+              </Tab>
+            ))}
+          </Inline>
+        </Tabs>
+        <Space h={1} />
+        <Tabs>
+          <Inline>
+            <Tab info>
+              <Text>Alternate:</Text>
+            </Tab>
+            <Tab
+              active={alternateAnimation === true}
+              onClick={() => {
+                alternateAnimationSet(true);
+              }}>
+              <Text>Yes</Text>
+            </Tab>
+            <Tab
+              active={alternateAnimation === false}
+              onClick={() => {
+                alternateAnimationSet(false);
+              }}>
+              <Text>No</Text>
+            </Tab>
+          </Inline>
+        </Tabs>
+        <Space h={1} />
+        <Inline h={-1}>
+          <Box flex={1} padding={[0.5, 1]} minWidth={"240px"}>
+            <Text>
+              Scale <span style={{ color: "#666" }}>{scale}</span>
+            </Text>
+            <Space h={1} />
+            <Range
+              aria-label="Scale"
+              type="range"
+              value={scale}
+              onChange={(e) => scaleSet(Number(e.target.value))}
+              min="1"
+              max="25"
+              step="0.5"
+            />
+          </Box>
 
-        <Textarea onChange={(e) => {}} className="code" value={css} />
+          <Box flex={1} padding={[0.5, 1]} minWidth={"240px"}>
+            <Text>
+              Transition <span style={{ color: "#666" }}>{animationTransition}%</span>
+            </Text>
+            <Space h={1} />
+            <Range
+              aria-label="Transition Speed"
+              type="range"
+              value={animationTransition}
+              onChange={(e) => animationTransitionSet(e.target.value)}
+              min="1"
+              max="100"
+            />
+          </Box>
 
+          <Box flex={1} padding={[0.5, 1]} minWidth={"240px"}>
+            <Text>
+              Speed <span style={{ color: "#666" }}>{animationSpeed}ms</span>
+            </Text>
+            <Space h={1} />
+            <Range
+              aria-label="Animation Speed"
+              type="range"
+              value={animationSpeedSrc}
+              onChange={(e) => animationSpeedSet(e.target.value)}
+              step="0.5"
+              min="2"
+              max={Math.ceil(Math.pow(16384 / 2, 1 / LOG_SCALE_FACTOR))}
+            />
+          </Box>
+        </Inline>
+        <Space h={2} />
+        <HeaderH3>Code</HeaderH3>
+        <Space h={1} />
+        <code>
+          <Textarea aria-label="Generated code" onChange={() => {}} className="code" value={css} />
+        </code>
         <Space h={1} />
         {navigator && navigator.clipboard && navigator.clipboard.writeText && (
           <Button
-            onClick={(e) => {
+            onClick={() => {
               navigator.clipboard.writeText(css);
             }}>
             Copy Code
           </Button>
         )}
-
         <Space h={2} />
         <Text>
-          For a simpler image to box-shadow conversion see, see <A href="https://javier.xyz/img2css/">img2css</A>.
+          For a simpler image to box-shadow conversion, see <A href="https://javier.xyz/img2css/">img2css</A>.
         </Text>
         <Space h={2} />
         <Text>
-          Made by <A href="https://twitter.com/javierbyte">javierbyte</A>.
+          Made by <A href="https://javier.xyz">javierbyte</A>.
         </Text>
         <Space h={3} />
       </Box>

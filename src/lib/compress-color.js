@@ -1,6 +1,10 @@
 import tinycolor from "tinycolor2";
 
-function compressColor(rgb) {
+function compressColorRGB(rgbObj) {
+  const rgb = `rgb(${rgbObj.r},${rgbObj.g},${rgbObj.b},${Math.ceil((rgbObj.a / 255) * 10) / 10})`;
+
+  if (rgbObj.a < 240) return rgb;
+
   const hex = tinycolor(rgb).toHexString();
 
   switch (
@@ -28,4 +32,4 @@ function compressColor(rgb) {
   return hex[1] === hex[2] && hex[3] === hex[4] && hex[5] === hex[6] ? "#" + hex[1] + hex[3] + hex[5] : hex;
 }
 
-export default compressColor;
+export default compressColorRGB;
