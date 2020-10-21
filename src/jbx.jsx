@@ -49,6 +49,69 @@ export const Text = Styled(BaseText)({
   }),
 });
 
+// export const Button = function (props) {
+//   const { children, style, ...other } = props;
+
+//   return (
+//     <Box
+//       padding={0.5}
+//       style={{
+//         marginTop: "-8px",
+//         marginTop: "-8px",
+//         userSelect: "none",
+//         cursor: "pointer",
+//         display: "inline-block",
+//         backgroundColor: "#eee",
+//         boxShadow: "4px 4px 0 #ccc",
+//         textAlign: "center",
+//         ...style,
+//       }}
+//       {...other}>
+//       <Text>{children}</Text>
+//     </Box>
+//   );
+// };
+
+export const ButtonContainer = Styled.button({
+  appearance: "none",
+  userSelect: "none",
+  cursor: "pointer",
+  display: "inline-block",
+  backgroundColor: "#eee",
+  boxShadow: "4px 4px 0 #ccc",
+  padding: `0 ${SPACE / 2}px`,
+  border: "none",
+  height: SPACE * 2.5,
+});
+
+export const Button = function (props) {
+  const { children, ...other } = props;
+
+  return (
+    <ButtonContainer {...other}>
+      <Text>{children}</Text>
+    </ButtonContainer>
+  );
+};
+
+export const Input = Styled.input({
+  "-webkit-text-fill-color": "#777",
+  opacity: 1,
+  flex: 1,
+  display: "block",
+  appearance: "none",
+  border: "none",
+  borderRadius: 0,
+  height: SPACE * 2.5,
+  backgroundColor: "#eee",
+  ...textProps({
+    capHeight: (BASE_FONT_SIZE * 3) / 3,
+  }),
+  padding: `0 ${SPACE / 2}px`,
+  boxShadow: `inset rgba(0, 0, 0, 0.04) 3px 3px 0, inset rgba(0, 0, 0, 0.03) 0.5px 0.5px 0`,
+  color: "#777",
+});
+
 export const Range = Styled.input({
   flex: 1,
   width: "100%",
@@ -63,6 +126,7 @@ export const Range = Styled.input({
     height: SPACE * 2,
     width: SPACE,
     backgroundColor: "#000",
+    border: "none",
   },
   "&::-moz-range-thumb": {
     appearance: "none",
@@ -71,6 +135,7 @@ export const Range = Styled.input({
     height: SPACE * 2,
     width: SPACE,
     backgroundColor: "#000",
+    border: "none",
   },
   "&::-webkit-slider-runnable-track": {
     appearance: "none",
@@ -96,7 +161,7 @@ export const HeaderH3 = Styled.h3({
   color: TEXT_MAIN_COLOR,
 
   letterSpacing: -0.22,
-  fontWeight: 400,
+  fontWeight: 500,
   ...textProps({
     capHeight: BASE_FONT_SIZE * 1 * 1.25,
     lineGap: BASE_FONT_SIZE,
@@ -107,7 +172,7 @@ export const HeaderH2 = Styled.h2({
   color: TEXT_MAIN_COLOR,
 
   letterSpacing: -0.33,
-  fontWeight: 400,
+  fontWeight: 500,
   ...textProps({
     capHeight: BASE_FONT_SIZE * 1.5,
     lineGap: 12,
@@ -115,7 +180,6 @@ export const HeaderH2 = Styled.h2({
 });
 export const HeaderH1 = Styled.h1({
   color: TEXT_MAIN_COLOR,
-
   letterSpacing: -1,
   margin: "2px 0",
   fontWeight: 700,
@@ -231,21 +295,11 @@ export const Dropzone = Styled.div({
   },
 });
 
-export const Button = function (props) {
-  const { children, ...other } = props;
+export const Ul = Styled.ul`
+margin: 0;
+padding: 0;`;
 
-  return (
-    <Box
-      padding={0.5}
-      style={{
-        userSelect: "none",
-        cursor: "pointer",
-        display: "inline-block",
-        backgroundColor: "#eee",
-        boxShadow: "4px 4px 0 #ccc",
-      }}
-      {...other}>
-      <Text>{children}</Text>
-    </Box>
-  );
-};
+export const Li = Styled.li`
+margin: 0 0 0 16px;
+padding: 4px 0;
+`;

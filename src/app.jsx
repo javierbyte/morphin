@@ -18,6 +18,8 @@ import {
   Space,
   Box,
   A,
+  Ul,
+  Li,
   Container,
   Dropzone,
   Inline,
@@ -322,9 +324,16 @@ function App() {
     <Container>
       <Box padding={2}>
         <Space h={1} />
-        <Box padding={0.25} style={{ display: "inline-block", backgroundColor: "var(--accent-color)" }}>
-          <HeaderH1>morphin</HeaderH1>
-        </Box>
+        <HeaderH1
+          style={{
+            fontWeight: 900,
+            display: "inline-block",
+            width: "auto",
+            padding: "6px",
+            backgroundColor: "var(--accent-color)",
+          }}>
+          morphin
+        </HeaderH1>
         <Space h={1} />
         <Text>
           Tool that creates animated CSS transitions. Add sprites and get the code ready to paste in your site.
@@ -369,6 +378,7 @@ function App() {
                   display: "block",
                   imageRendering: "crisp-edges",
                 }}
+                aria-label="Sprite A"
                 src={spriteA.src}
               />
             </div>
@@ -404,6 +414,7 @@ function App() {
                   display: "block",
                   imageRendering: "crisp-edges",
                 }}
+                aria-label="Sprite B"
                 src={spriteB.src}
               />
             </div>
@@ -531,6 +542,28 @@ function App() {
         <Text>
           For a simpler image to box-shadow conversion, see <A href="https://javier.xyz/img2css/">img2css</A>.
         </Text>
+        <Space h={2} />
+        <Text>More unrelated experiments</Text>
+        <Space h={0.5} />
+        <Ul>
+          <Li>
+            <Text>
+              {"Create more cohesive color schemes, "}
+              <A href="https://javier.xyz/cohesive-colors/">cohesive-colors</A>.
+            </Text>
+          </Li>
+          <Li>
+            <Text>
+              Find the visual center of your images / logos,{" "}
+              <A href="https://javier.xyz/visual-center/">visual-center</A>.
+            </Text>
+          </Li>
+          <Li>
+            <Text>
+              JS AI Battle Game, <A href="https://clashjs.com/">clashjs</A>.
+            </Text>
+          </Li>
+        </Ul>
         <Space h={2} />
         <Text>
           Made by <A href="https://javier.xyz">javierbyte</A>.
