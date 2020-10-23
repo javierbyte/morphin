@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Styled from "styled-components";
 
 import _ from "lodash";
 import compressColorRGB from "./lib/compress-color.js";
@@ -9,6 +8,7 @@ import base64ImageUtils from "base64-image-utils";
 const { base64ImageToRGBArray } = base64ImageUtils;
 
 import {
+  JBX,
   Button,
   Range,
   HeaderH1,
@@ -23,24 +23,14 @@ import {
   Container,
   Dropzone,
   Inline,
-} from "./jbx.jsx";
+  Tabs,
+  Tab,
+  Code
+} from "jbx";
 
 const LOG_SCALE_FACTOR = 2.2;
 
-const Textarea = Styled.textarea({
-  "font-family": "monaco, monospace",
-  border: "none",
-  width: "100%",
-  height: "256px",
-  "font-size": "12px",
-  "line-height": "1.309",
-  padding: "16px 18px",
-  background: "#ecf0f1",
-  color: "#34495e",
-  ":focus": {
-    outline: "none",
-  },
-});
+
 
 const defaultSprites = {
   Yoshi: {
@@ -150,17 +140,6 @@ function rgbArrayToShadow(rgbArray, { sortMethod = "Brightness", scale = 1, tran
     .value()
     .join(",");
 }
-
-const Tabs = Styled.div({});
-
-const Tab = Styled.div({
-  userSelect: "none",
-  padding: 8,
-  cursor: "pointer",
-  backgroundColor: (props) => (props.active ? "#000" : props.info ? "#fff" : "#ecf0f1"),
-  color: (props) => (props.active ? "#fff" : "#000"),
-  paddingLeft: (props) => (props.info ? 0 : undefined),
-});
 
 function saveFrame(path, config, stateSet) {
   readImageAsBase64(path, (base64) => {
@@ -322,6 +301,7 @@ function App() {
 
   return (
     <Container>
+      <JBX accent={"#ab99cf"} />
       <Box padding={2}>
         <Space h={1} />
         <HeaderH1
@@ -527,7 +507,7 @@ function App() {
         <HeaderH3>Code</HeaderH3>
         <Space h={1} />
         <code>
-          <Textarea aria-label="Generated code" onChange={() => {}} className="code" value={css} />
+          <Code aria-label="Generated code" onChange={() => {}} className="code" value={css} />
         </code>
         <Space h={1} />
         {navigator && navigator.clipboard && navigator.clipboard.writeText && (
