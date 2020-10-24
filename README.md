@@ -1,8 +1,4 @@
 # morphin
-Create image morphing animations with css!
+Tool that creates animated CSS transitions. Add sprites and get the code ready to paste in your site.
 
-[![img2css](docs-assets/screenshot.jpg)](http://javier.xyz/morphin/)
-
-# Roadmap.
-* <s>Export the generated code.</s> DONE.
-* More than 2 sprites.
+[![morphin](docs-assets/thumbnail2.jpg)](http://javier.xyz/morphin/)
