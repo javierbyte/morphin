@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import _ from "lodash";
+import Styled from "styled-components";
 import compressColorRGB from "./lib/compress-color.js";
 import readImageAsBase64 from "./lib/read-image-as-base64.js";
 
@@ -25,12 +26,19 @@ import {
   Inline,
   Tabs,
   Tab,
-  Code
+  Code,
 } from "jbx";
 
+const Sprite = Styled.img(({ width, height }) => {
+  return {
+    height: (28 / Math.max(height, width)) * height,
+    width: (28 / Math.max(height, width)) * width,
+    display: "block",
+    imageRendering: "pixelated",
+  };
+});
+
 const LOG_SCALE_FACTOR = 2.2;
-
-
 
 const defaultSprites = {
   Yoshi: {
@@ -125,7 +133,7 @@ const SORT_METHODS = {
   ],
 };
 
-function rgbArrayToShadow(rgbArray, { sortMethod = "Brightness", scale = 1, translationX = 0, translationY = 0 }) {
+function rgbArrayToShadow(rgbArray, { sortMethod = "Brightness", scale = 1 }) {
   return _.chain(rgbArray)
     .filter((pixel) => {
       return !(pixel.rgb.a < 1 || (pixel.rgb.r > 254 && pixel.rgb.g > 254 && pixel.rgb.b > 254));
@@ -133,7 +141,6 @@ function rgbArrayToShadow(rgbArray, { sortMethod = "Brightness", scale = 1, tran
     .sortBy(SORT_METHODS[sortMethod])
     .map((pixel) => {
       const color = compressColorRGB(pixel.rgb);
-      // return `${color} ${pixel.x * scale + translationX + scale}px ${pixel.y * scale + translationY + scale}px`;
       return `${color} ${(pixel.x + 1) * scale}px ${(pixel.y + 1) * scale}px`;
     })
     .compact()
@@ -168,31 +175,6 @@ function saveFrame(path, config, stateSet) {
   });
 }
 
-function saveFrame64(base64, config, stateSet) {
-  base64ImageToRGBArray(base64, (err, rgbArray) => {
-    const maxY = rgbArray.reduce((res, rgb) => {
-      return Math.max(res, rgb.y);
-    }, -Infinity);
-    const minY = rgbArray.reduce((res, rgb) => {
-      return Math.min(res, rgb.y);
-    }, Infinity);
-
-    const maxX = rgbArray.reduce((res, rgb) => {
-      return Math.max(res, rgb.x);
-    }, -Infinity);
-    const minX = rgbArray.reduce((res, rgb) => {
-      return Math.min(res, rgb.x);
-    }, Infinity);
-
-    stateSet({
-      src: base64,
-      rgbArray,
-      height: Math.abs(maxY - minY) + 1,
-      width: Math.abs(maxX - minX) + 1,
-    });
-  });
-}
-
 function App() {
   const [animationSpeedSrc, animationSpeedSet] = useState(Math.round(Math.pow(1000, 1 / LOG_SCALE_FACTOR)));
   const animationSpeed = Math.round(Math.pow(animationSpeedSrc, LOG_SCALE_FACTOR)) + 11 + 16;
@@ -217,8 +199,8 @@ function App() {
   useEffect(() => {
     if (!currentSprite) return;
 
-    saveFrame(`sprites/${defaultSprites[currentSprite].sprites[0]}`, { scale }, spriteASet);
-    saveFrame(`sprites/${defaultSprites[currentSprite].sprites[1]}`, { scale }, spriteBSet);
+    saveFrame(`${document.location.href}/sprites/${defaultSprites[currentSprite].sprites[0]}`, { scale }, spriteASet);
+    saveFrame(`${document.location.href}/sprites/${defaultSprites[currentSprite].sprites[1]}`, { scale }, spriteBSet);
 
     // const { scale = 3, transition = 25, alternate = false } = defaultSprites[currentSprite];
 
@@ -289,7 +271,7 @@ function App() {
 
       const [base64] = await resizeImage(base64src);
 
-      saveFrame64(base64, { scale, reverse }, setFunction);
+      saveFrame(base64, { scale, reverse }, setFunction);
     };
     fr.readAsDataURL(file);
   }
@@ -351,16 +333,7 @@ function App() {
                 alignContent: "center",
                 justifyContent: "center",
               }}>
-              <img
-                style={{
-                  height: (32 / Math.max(spriteA.height, spriteA.width)) * spriteA.height,
-                  width: (32 / Math.max(spriteA.height, spriteA.width)) * spriteA.width,
-                  display: "block",
-                  imageRendering: "crisp-edges",
-                }}
-                aria-label="Sprite A"
-                src={spriteA.src}
-              />
+              <Sprite width={spriteA.width} height={spriteA.height} aria-label="Sprite A" src={spriteA.src} />
             </div>
 
             <Text>Sprite 1</Text>
@@ -387,16 +360,7 @@ function App() {
                 alignContent: "center",
                 justifyContent: "center",
               }}>
-              <img
-                style={{
-                  height: (32 / Math.max(spriteB.height, spriteB.width)) * spriteB.height,
-                  width: (32 / Math.max(spriteB.height, spriteB.width)) * spriteB.width,
-                  display: "block",
-                  imageRendering: "crisp-edges",
-                }}
-                aria-label="Sprite B"
-                src={spriteB.src}
-              />
+              <Sprite width={spriteB.width} height={spriteB.height} aria-label="Sprite B" src={spriteB.src} />
             </div>
 
             <Text>Sprite 2</Text>
