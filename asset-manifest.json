@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.js": "/morphin/static/js/main.f40c5ae2.chunk.js",
-    "main.js.map": "/morphin/static/js/main.f40c5ae2.chunk.js.map",
-    "runtime-main.js": "/morphin/static/js/runtime-main.c7a5e27b.js",
-    "runtime-main.js.map": "/morphin/static/js/runtime-main.c7a5e27b.js.map",
-    "static/js/2.f6403ec1.chunk.js": "/morphin/static/js/2.f6403ec1.chunk.js",
-    "static/js/2.f6403ec1.chunk.js.map": "/morphin/static/js/2.f6403ec1.chunk.js.map",
+    "main.js": "/morphin/static/js/main.d91dc183.chunk.js",
+    "main.js.map": "/morphin/static/js/main.d91dc183.chunk.js.map",
+    "runtime-main.js": "/morphin/static/js/runtime-main.ddba8463.js",
+    "runtime-main.js.map": "/morphin/static/js/runtime-main.ddba8463.js.map",
+    "static/js/2.d894a0ee.chunk.js": "/morphin/static/js/2.d894a0ee.chunk.js",
+    "static/js/2.d894a0ee.chunk.js.map": "/morphin/static/js/2.d894a0ee.chunk.js.map",
     "index.html": "/morphin/index.html",
-    "static/js/2.f6403ec1.chunk.js.LICENSE.txt": "/morphin/static/js/2.f6403ec1.chunk.js.LICENSE.txt"
+    "static/js/2.d894a0ee.chunk.js.LICENSE.txt": "/morphin/static/js/2.d894a0ee.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.c7a5e27b.js",
-    "static/js/2.f6403ec1.chunk.js",
-    "static/js/main.f40c5ae2.chunk.js"
+    "static/js/runtime-main.ddba8463.js",
+    "static/js/2.d894a0ee.chunk.js",
+    "static/js/main.d91dc183.chunk.js"
   ]
 }
