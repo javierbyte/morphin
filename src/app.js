@@ -12,7 +12,7 @@ import {
   JBX,
   Button,
   Range,
-  HeaderH1,
+  MainHeader,
   HeaderH3,
   HeaderH2,
   Text,
@@ -302,17 +302,7 @@ function App() {
   return (
     <Container>
       <JBX accent={"#ab99cf"} />
-      <Space h={1} />
-      <HeaderH1
-        style={{
-          fontWeight: 900,
-          display: "inline-block",
-          width: "auto",
-          padding: "6px",
-          backgroundColor: "var(--accent-color)",
-        }}>
-        morphin
-      </HeaderH1>
+      <MainHeader>morphin</MainHeader>
       <Space h={1} />
       <Text>
         Tool that creates animated CSS transitions. Add sprites and get the code
@@ -401,7 +391,6 @@ function App() {
         </Dropzone>
       </Inline>
       <Space h={2} />
-
       <HeaderH2>Preview</HeaderH2>
       <Space h={1} />
       <style>{css}</style>
@@ -539,7 +528,6 @@ function App() {
           </Li>
         </Ul>
       </Text>
-
       <Space h={2} />
       <Text>
         Made by <A href="https://javier.xyz">javierbyte</A>.
