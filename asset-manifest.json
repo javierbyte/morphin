@@ -1,17 +1,10 @@
 {
   "files": {
-    "main.js": "/morphin/static/js/main.04f3c2c3.chunk.js",
-    "main.js.map": "/morphin/static/js/main.04f3c2c3.chunk.js.map",
-    "runtime-main.js": "/morphin/static/js/runtime-main.ddba8463.js",
-    "runtime-main.js.map": "/morphin/static/js/runtime-main.ddba8463.js.map",
-    "static/js/2.0a915df5.chunk.js": "/morphin/static/js/2.0a915df5.chunk.js",
-    "static/js/2.0a915df5.chunk.js.map": "/morphin/static/js/2.0a915df5.chunk.js.map",
+    "main.js": "/morphin/static/js/main.63f6cfd2.js",
     "index.html": "/morphin/index.html",
-    "static/js/2.0a915df5.chunk.js.LICENSE.txt": "/morphin/static/js/2.0a915df5.chunk.js.LICENSE.txt"
+    "main.63f6cfd2.js.map": "/morphin/static/js/main.63f6cfd2.js.map"
   },
   "entrypoints": [
-    "static/js/runtime-main.ddba8463.js",
-    "static/js/2.0a915df5.chunk.js",
-    "static/js/main.04f3c2c3.chunk.js"
+    "static/js/main.63f6cfd2.js"
   ]
 }
