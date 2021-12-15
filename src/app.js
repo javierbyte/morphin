@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
-import _ from "lodash";
-import Styled from "styled-components";
-import compressColorRGB from "./lib/compress-color.js";
-import readImageAsBase64 from "./lib/read-image-as-base64.js";
+import _ from 'lodash';
+import Styled from 'styled-components';
+import compressColorRGB from './lib/compress-color.js';
+import readImageAsBase64 from './lib/read-image-as-base64.js';
 
-import base64ImageUtils from "base64-image-utils";
+import base64ImageUtils from 'base64-image-utils';
 const { base64ImageToRGBArray } = base64ImageUtils;
 
 import {
@@ -26,15 +26,15 @@ import {
   Inline,
   Tabs,
   Tab,
-  Code,
-} from "jbx";
+  Code
+} from 'jbx';
 
 const Sprite = Styled.img(({ width, height }) => {
   return {
     height: (28 / Math.max(height, width)) * height,
     width: (28 / Math.max(height, width)) * width,
-    display: "block",
-    imageRendering: "pixelated",
+    display: 'block',
+    imageRendering: 'pixelated'
   };
 });
 
@@ -42,39 +42,39 @@ const LOG_SCALE_FACTOR = 2.2;
 
 const defaultSprites = {
   Yoshi: {
-    name: "Yoshi",
-    sprites: ["yoshi1.png", "yoshi2.png"],
+    name: 'Yoshi',
+    sprites: ['yoshi1.png', 'yoshi2.png']
   },
-  "3 Dots": {
-    name: "3 Dots",
-    sprites: ["3dots1.png", "3dots2.png"],
+  '3 Dots': {
+    name: '3 Dots',
+    sprites: ['3dots1.png', '3dots2.png'],
     scale: 8,
     transition: 80,
     alternate: false,
-    sortMethod: "Brightness",
+    sortMethod: 'Brightness'
   },
   Square: {
-    name: "Square",
-    sprites: ["square1.png", "square2.png"],
+    name: 'Square',
+    sprites: ['square1.png', 'square2.png'],
     scale: 12,
     transition: 100,
     alternate: false,
-    sortMethod: "Brightness",
+    sortMethod: 'Brightness'
   },
   Mario: {
-    name: "Mario",
-    sprites: ["mario1.png", "mario2.png"],
+    name: 'Mario',
+    sprites: ['mario1.png', 'mario2.png']
   },
   Pikachu: {
-    name: "Pikachu",
-    sprites: ["pikachu.png", "raichu.png"],
-    sortMethod: "Brightness",
+    name: 'Pikachu',
+    sprites: ['pikachu.png', 'raichu.png'],
+    sortMethod: 'Brightness'
   },
   Supermario: {
-    name: "Super Mario",
-    sprites: ["supermario1.png", "supermario2.png"],
-    sortMethod: "Horizontal",
-  },
+    name: 'Super Mario',
+    sprites: ['supermario1.png', 'supermario2.png'],
+    sortMethod: 'Horizontal'
+  }
 };
 
 function resizeImage(base64Str, maxMass = 64 * 50) {
@@ -82,7 +82,7 @@ function resizeImage(base64Str, maxMass = 64 * 50) {
     let img = new Image();
     img.src = base64Str;
     img.onload = () => {
-      let canvas = document.createElement("canvas");
+      let canvas = document.createElement('canvas');
 
       const originalWidth = img.width;
       const originalHeight = img.height;
@@ -100,7 +100,7 @@ function resizeImage(base64Str, maxMass = 64 * 50) {
 
       canvas.width = width;
       canvas.height = height;
-      let ctx = canvas.getContext("2d");
+      let ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
       resolve([canvas.toDataURL(), { originalWidth, originalHeight }]);
     };
@@ -114,32 +114,29 @@ const SORT_METHODS = {
     },
     (color) => {
       return color.rgb.r + color.rgb.g + color.rgb.b;
-    },
+    }
   ],
   Vertical: [
     (color) => {
       return color.x;
-    },
+    }
   ],
   Horizontal: [
     (color) => {
       return color.y;
-    },
+    }
   ],
   Brightness: [
     (color) => {
       return Math.floor((color.rgb.r + color.rgb.g + color.rgb.b) / 2);
-    },
-  ],
+    }
+  ]
 };
 
-function rgbArrayToShadow(rgbArray, { sortMethod = "Brightness", scale = 1 }) {
+function rgbArrayToShadow(rgbArray, { sortMethod = 'Brightness', scale = 1 }) {
   return _.chain(rgbArray)
     .filter((pixel) => {
-      return !(
-        pixel.rgb.a < 1 ||
-        (pixel.rgb.r > 254 && pixel.rgb.g > 254 && pixel.rgb.b > 254)
-      );
+      return !(pixel.rgb.a < 1 || (pixel.rgb.r > 254 && pixel.rgb.g > 254 && pixel.rgb.b > 254));
     })
     .sortBy(SORT_METHODS[sortMethod])
     .map((pixel) => {
@@ -148,7 +145,7 @@ function rgbArrayToShadow(rgbArray, { sortMethod = "Brightness", scale = 1 }) {
     })
     .compact()
     .value()
-    .join(",");
+    .join(',');
 }
 
 function saveFrame(path, config, stateSet) {
@@ -172,7 +169,7 @@ function saveFrame(path, config, stateSet) {
         src: base64,
         rgbArray,
         height: Math.abs(maxY - minY) + 1,
-        width: Math.abs(maxX - minX) + 1,
+        width: Math.abs(maxX - minX) + 1
       });
     });
   });
@@ -182,24 +179,23 @@ function App() {
   const [animationSpeedSrc, animationSpeedSet] = useState(
     Math.round(Math.pow(1000, 1 / LOG_SCALE_FACTOR))
   );
-  const animationSpeed =
-    Math.round(Math.pow(animationSpeedSrc, LOG_SCALE_FACTOR)) + 11 + 16;
+  const animationSpeed = Math.round(Math.pow(animationSpeedSrc, LOG_SCALE_FACTOR)) + 11 + 16;
   const [animationTransition, animationTransitionSet] = useState(25);
   const [alternateAnimation, alternateAnimationSet] = useState(true);
 
-  const [currentSprite, currentSpriteSet] = useState("Yoshi");
-  const [sortMethod, sortMethodSet] = useState("Vertical");
+  const [currentSprite, currentSpriteSet] = useState('Yoshi');
+  const [sortMethod, sortMethodSet] = useState('Vertical');
   const [scale, scaleSet] = useState(5);
 
   const [spriteA, spriteASet] = useState({
     shadow: null,
     height: 5,
-    width: 5,
+    width: 5
   });
   const [spriteB, spriteBSet] = useState({
     shadow: null,
     height: 5,
-    width: 5,
+    width: 5
   });
 
   useEffect(() => {
@@ -221,12 +217,12 @@ function App() {
     spriteASet({
       shadow: null,
       height: 0,
-      width: 0,
+      width: 0
     });
     spriteBSet({
       shadow: null,
       height: 0,
-      width: 0,
+      width: 0
     });
 
     scaleSet(defaultSprites[currentSprite].scale || 3);
@@ -236,7 +232,7 @@ function App() {
         ? true
         : defaultSprites[currentSprite].alternate
     );
-    sortMethodSet(defaultSprites[currentSprite].sortMethod || "Vertical");
+    sortMethodSet(defaultSprites[currentSprite].sortMethod || 'Vertical');
   }, [currentSprite]);
 
   const totalWidth = Math.max(spriteA.width, spriteB.width) * scale;
@@ -249,7 +245,7 @@ function App() {
       scale,
       sortMethod,
       translationX: totalWidth / -2,
-      translationY: totalHeight / -2,
+      translationY: totalHeight / -2
     })};
   }
   ${50 + animationTransition / 2}%, 100% {
@@ -257,7 +253,7 @@ function App() {
       scale,
       sortMethod,
       translationX: totalWidth / -2,
-      translationY: totalHeight / -2,
+      translationY: totalHeight / -2
     })};
   }
 }
@@ -265,11 +261,9 @@ function App() {
 .pixel {
   height: ${scale}px;
   width: ${scale}px;
-  margin: ${-scale}px ${totalHeight + scale * 2}px ${
-    totalWidth + scale * 2
-  }px ${-scale}px;
+  margin: ${-scale}px ${totalHeight + scale * 2}px ${totalWidth + scale * 2}px ${-scale}px;
   animation: morphin ${animationSpeed}ms infinite${
-    alternateAnimation ? " alternate " : " "
+    alternateAnimation ? ' alternate ' : ' '
   }cubic-bezier(0.45, 0, 0.55, 1);
 }`.trim();
 
@@ -301,12 +295,12 @@ function App() {
 
   return (
     <Container>
-      <JBX accent={"#ab99cf"} />
+      <JBX accent={'#ab99cf'} />
       <MainHeader>morphin</MainHeader>
       <Space h={1} />
       <Text>
-        Tool that creates animated CSS transitions. Add sprites and get the code
-        ready to paste in your site.
+        Tool that creates animated CSS transitions. Add sprites and get the code ready to paste in
+        your site.
       </Text>
       <Space h={2} />
       <Tabs>
@@ -320,7 +314,8 @@ function App() {
               key={spriteKey}
               onClick={() => {
                 currentSpriteSet(spriteKey);
-              }}>
+              }}
+            >
               <Text>{spriteKey}</Text>
             </Tab>
           ))}
@@ -331,16 +326,18 @@ function App() {
         <Dropzone
           onDrop={(evt) => onFileSelected(evt, spriteASet)}
           onDragOver={eventIgnore}
-          onDragEnter={eventIgnore}>
+          onDragEnter={eventIgnore}
+        >
           <div
             style={{
-              display: "flex",
+              display: 'flex',
               height: 48,
               width: 48,
-              alignItems: "center",
-              alignContent: "center",
-              justifyContent: "center",
-            }}>
+              alignItems: 'center',
+              alignContent: 'center',
+              justifyContent: 'center'
+            }}
+          >
             <Sprite
               width={spriteA.width}
               height={spriteA.height}
@@ -363,16 +360,18 @@ function App() {
         <Dropzone
           onDrop={(evt) => onFileSelected(evt, spriteBSet)}
           onDragOver={eventIgnore}
-          onDragEnter={eventIgnore}>
+          onDragEnter={eventIgnore}
+        >
           <div
             style={{
-              display: "flex",
+              display: 'flex',
               height: 48,
               width: 48,
-              alignItems: "center",
-              alignContent: "center",
-              justifyContent: "center",
-            }}>
+              alignItems: 'center',
+              alignContent: 'center',
+              justifyContent: 'center'
+            }}
+          >
             <Sprite
               width={spriteB.width}
               height={spriteB.height}
@@ -407,7 +406,8 @@ function App() {
               key={sortMethodKey}
               onClick={() => {
                 sortMethodSet(sortMethodKey);
-              }}>
+              }}
+            >
               <Text>{sortMethodKey}</Text>
             </Tab>
           ))}
@@ -423,23 +423,25 @@ function App() {
             active={alternateAnimation === true}
             onClick={() => {
               alternateAnimationSet(true);
-            }}>
+            }}
+          >
             <Text>Yes</Text>
           </Tab>
           <Tab
             active={alternateAnimation === false}
             onClick={() => {
               alternateAnimationSet(false);
-            }}>
+            }}
+          >
             <Text>No</Text>
           </Tab>
         </Inline>
       </Tabs>
       <Space h={1} />
       <Inline h={-1}>
-        <Box flex={1} padding={[0.5, 1]} minWidth={"240px"}>
+        <Box flex={1} padding={[0.5, 1]} minWidth={'240px'}>
           <Text>
-            Scale <span style={{ color: "#666" }}>{scale}</span>
+            Scale <span style={{ color: '#666' }}>{scale}</span>
           </Text>
           <Space h={1} />
           <Range
@@ -453,10 +455,9 @@ function App() {
           />
         </Box>
 
-        <Box flex={1} padding={[0.5, 1]} minWidth={"240px"}>
+        <Box flex={1} padding={[0.5, 1]} minWidth={'240px'}>
           <Text>
-            Transition{" "}
-            <span style={{ color: "#666" }}>{animationTransition}%</span>
+            Transition <span style={{ color: '#666' }}>{animationTransition}%</span>
           </Text>
           <Space h={1} />
           <Range
@@ -469,9 +470,9 @@ function App() {
           />
         </Box>
 
-        <Box flex={1} padding={[0.5, 1]} minWidth={"240px"}>
+        <Box flex={1} padding={[0.5, 1]} minWidth={'240px'}>
           <Text>
-            Speed <span style={{ color: "#666" }}>{animationSpeed}ms</span>
+            Speed <span style={{ color: '#666' }}>{animationSpeed}ms</span>
           </Text>
           <Space h={1} />
           <Range
@@ -489,25 +490,21 @@ function App() {
       <HeaderH3>Code</HeaderH3>
       <Space h={1} />
       <code>
-        <Code
-          aria-label="Generated code"
-          onChange={() => {}}
-          className="code"
-          value={css}
-        />
+        <Code aria-label="Generated code" onChange={() => {}} className="code" value={css} />
       </code>
       <Space h={1} />
       {navigator && navigator.clipboard && navigator.clipboard.writeText && (
         <Button
           onClick={() => {
             navigator.clipboard.writeText(css);
-          }}>
+          }}
+        >
           Copy Code
         </Button>
       )}
       <Space h={2} />
       <Text>
-        For a simpler image to box-shadow conversion, see{" "}
+        For a simpler image to box-shadow conversion, see{' '}
         <A href="https://javier.xyz/img2css/">img2css</A>.
       </Text>
       <Space h={2} />
@@ -516,11 +513,11 @@ function App() {
       <Text>
         <Ul>
           <Li>
-            {"Create more cohesive color schemes, "}
+            {'Create more cohesive color schemes, '}
             <A href="https://javier.xyz/cohesive-colors/">cohesive-colors</A>.
           </Li>
           <Li>
-            Find the visual center of your images / logos,{" "}
+            Find the visual center of your images / logos,{' '}
             <A href="https://javier.xyz/visual-center/">visual-center</A>.
           </Li>
           <Li>

@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": "Tool that creates animated CSS transitions.",
   "scripts": {
+    "start": "react-scripts start",
     "dev": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -43,8 +44,8 @@
   },
   "homepage": "https://javier.xyz/morphin/",
   "devDependencies": {
-    "eslint": "^7.32.0",
-    "eslint-plugin-react": "^7.24.0",
+    "eslint": "^8.4.1",
+    "eslint-plugin-react": "^7.27.1",
     "gh-pages": "^3.2.3"
   },
   "dependencies": {
@@ -54,8 +55,8 @@
     "lodash": "^4.17.21",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-scripts": "^4.0.3",
-    "styled-components": "^5.3.1",
+    "react-scripts": "^5.0.0",
+    "styled-components": "^5.3.3",
     "tinycolor2": "^1.4.2"
   }
 }
