@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/morphin/static/js/main.63f6cfd2.js",
+    "main.js": "/morphin/static/js/main.dc1b6935.js",
     "index.html": "/morphin/index.html",
-    "main.63f6cfd2.js.map": "/morphin/static/js/main.63f6cfd2.js.map"
+    "main.dc1b6935.js.map": "/morphin/static/js/main.dc1b6935.js.map"
   },
   "entrypoints": [
-    "static/js/main.63f6cfd2.js"
+    "static/js/main.dc1b6935.js"
   ]
 }
