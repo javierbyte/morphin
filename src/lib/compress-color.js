@@ -1,5 +1,3 @@
-// import tinycolor from "tinycolor2";
-
 function componentToHex(c) {
   const hex = c.toString(16);
   return hex.length == 1 ? '0' + hex : hex;
@@ -10,11 +8,11 @@ function rgbToHex(r, g, b) {
 }
 
 function compressColorRGB(rgbObj) {
-  const rgb = `rgb(${rgbObj.r},${rgbObj.g},${rgbObj.b},${Math.ceil((rgbObj.a / 255) * 10) / 10})`;
+  const rgb = `rgb(${rgbObj.r},${rgbObj.g},${rgbObj.b},${
+    Math.ceil((rgbObj.a / 255) * 10) / 10
+  })`;
 
   if (rgbObj.a < 240) return rgb;
-
-  // const hex = tinycolor(rgb).toHexString();
 
   const hex = rgbToHex(rgbObj.r, rgbObj.g, rgbObj.b);
 

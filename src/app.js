@@ -3,10 +3,10 @@ import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 import Styled from 'styled-components';
 import compressColorRGB from './lib/compress-color.js';
-import readImageAsBase64 from './lib/read-image-as-base64.js';
 
-import base64ImageUtils from 'base64-image-utils';
-const { base64ImageToRGBArray } = base64ImageUtils;
+import { imageToRGBArray } from 'canvas-image-utils';
+
+import MoreExperiments from './MoreExperiments.jsx';
 
 import {
   JBX,
@@ -26,7 +26,7 @@ import {
   Inline,
   Tabs,
   Tab,
-  Code
+  Code,
 } from 'jbx';
 
 const Sprite = Styled.img(({ width, height }) => {
@@ -34,7 +34,7 @@ const Sprite = Styled.img(({ width, height }) => {
     height: (28 / Math.max(height, width)) * height,
     width: (28 / Math.max(height, width)) * width,
     display: 'block',
-    imageRendering: 'pixelated'
+    imageRendering: 'pixelated',
   };
 });
 
@@ -43,7 +43,7 @@ const LOG_SCALE_FACTOR = 2.2;
 const defaultSprites = {
   Yoshi: {
     name: 'Yoshi',
-    sprites: ['yoshi1.png', 'yoshi2.png']
+    sprites: ['yoshi1.png', 'yoshi2.png'],
   },
   '3 Dots': {
     name: '3 Dots',
@@ -51,7 +51,7 @@ const defaultSprites = {
     scale: 8,
     transition: 80,
     alternate: false,
-    sortMethod: 'Brightness'
+    sortMethod: 'Brightness',
   },
   Square: {
     name: 'Square',
@@ -59,53 +59,23 @@ const defaultSprites = {
     scale: 12,
     transition: 100,
     alternate: false,
-    sortMethod: 'Brightness'
+    sortMethod: 'Brightness',
   },
   Mario: {
     name: 'Mario',
-    sprites: ['mario1.png', 'mario2.png']
+    sprites: ['mario1.png', 'mario2.png'],
   },
   Pikachu: {
     name: 'Pikachu',
     sprites: ['pikachu.png', 'raichu.png'],
-    sortMethod: 'Brightness'
+    sortMethod: 'Brightness',
   },
   Supermario: {
     name: 'Super Mario',
     sprites: ['supermario1.png', 'supermario2.png'],
-    sortMethod: 'Horizontal'
-  }
+    sortMethod: 'Horizontal',
+  },
 };
-
-function resizeImage(base64Str, maxMass = 64 * 50) {
-  return new Promise((resolve) => {
-    let img = new Image();
-    img.src = base64Str;
-    img.onload = () => {
-      let canvas = document.createElement('canvas');
-
-      const originalWidth = img.width;
-      const originalHeight = img.height;
-
-      let width = img.width;
-      let height = img.height;
-
-      while (width * height > maxMass) {
-        width = width / Math.sqrt(2, 2);
-        height = height / Math.sqrt(2, 2);
-      }
-
-      width = Math.round(width);
-      height = Math.round(height);
-
-      canvas.width = width;
-      canvas.height = height;
-      let ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-      resolve([canvas.toDataURL(), { originalWidth, originalHeight }]);
-    };
-  });
-}
 
 const SORT_METHODS = {
   Diagonal: [
@@ -114,29 +84,32 @@ const SORT_METHODS = {
     },
     (color) => {
       return color.rgb.r + color.rgb.g + color.rgb.b;
-    }
+    },
   ],
   Vertical: [
     (color) => {
       return color.x;
-    }
+    },
   ],
   Horizontal: [
     (color) => {
       return color.y;
-    }
+    },
   ],
   Brightness: [
     (color) => {
       return Math.floor((color.rgb.r + color.rgb.g + color.rgb.b) / 2);
-    }
-  ]
+    },
+  ],
 };
 
 function rgbArrayToShadow(rgbArray, { sortMethod = 'Brightness', scale = 1 }) {
   return _.chain(rgbArray)
     .filter((pixel) => {
-      return !(pixel.rgb.a < 1 || (pixel.rgb.r > 254 && pixel.rgb.g > 254 && pixel.rgb.b > 254));
+      return !(
+        pixel.rgb.a < 1 ||
+        (pixel.rgb.r > 254 && pixel.rgb.g > 254 && pixel.rgb.b > 254)
+      );
     })
     .sortBy(SORT_METHODS[sortMethod])
     .map((pixel) => {
@@ -148,30 +121,27 @@ function rgbArrayToShadow(rgbArray, { sortMethod = 'Brightness', scale = 1 }) {
     .join(',');
 }
 
-function saveFrame(path, config, stateSet) {
-  readImageAsBase64(path, (base64) => {
-    base64ImageToRGBArray(base64, (err, rgbArray) => {
-      const maxY = rgbArray.reduce((res, rgb) => {
-        return Math.max(res, rgb.y);
-      }, -Infinity);
-      const minY = rgbArray.reduce((res, rgb) => {
-        return Math.min(res, rgb.y);
-      }, Infinity);
+async function saveFrame(path, config, stateSet) {
+  const rgbArray = await imageToRGBArray(path, { maxSize: 32 });
 
-      const maxX = rgbArray.reduce((res, rgb) => {
-        return Math.max(res, rgb.x);
-      }, -Infinity);
-      const minX = rgbArray.reduce((res, rgb) => {
-        return Math.min(res, rgb.x);
-      }, Infinity);
+  const maxY = rgbArray.reduce((res, rgb) => {
+    return Math.max(res, rgb.y);
+  }, -Infinity);
+  const minY = rgbArray.reduce((res, rgb) => {
+    return Math.min(res, rgb.y);
+  }, Infinity);
+  const maxX = rgbArray.reduce((res, rgb) => {
+    return Math.max(res, rgb.x);
+  }, -Infinity);
+  const minX = rgbArray.reduce((res, rgb) => {
+    return Math.min(res, rgb.x);
+  }, Infinity);
 
-      stateSet({
-        src: base64,
-        rgbArray,
-        height: Math.abs(maxY - minY) + 1,
-        width: Math.abs(maxX - minX) + 1
-      });
-    });
+  stateSet({
+    src: path,
+    rgbArray,
+    height: Math.abs(maxY - minY) + 1,
+    width: Math.abs(maxX - minX) + 1,
   });
 }
 
@@ -179,7 +149,8 @@ function App() {
   const [animationSpeedSrc, animationSpeedSet] = useState(
     Math.round(Math.pow(1000, 1 / LOG_SCALE_FACTOR))
   );
-  const animationSpeed = Math.round(Math.pow(animationSpeedSrc, LOG_SCALE_FACTOR)) + 11 + 16;
+  const animationSpeed =
+    Math.round(Math.pow(animationSpeedSrc, LOG_SCALE_FACTOR)) + 11 + 16;
   const [animationTransition, animationTransitionSet] = useState(25);
   const [alternateAnimation, alternateAnimationSet] = useState(true);
 
@@ -190,12 +161,12 @@ function App() {
   const [spriteA, spriteASet] = useState({
     shadow: null,
     height: 5,
-    width: 5
+    width: 5,
   });
   const [spriteB, spriteBSet] = useState({
     shadow: null,
     height: 5,
-    width: 5
+    width: 5,
   });
 
   useEffect(() => {
@@ -212,17 +183,15 @@ function App() {
       spriteBSet
     );
 
-    // const { scale = 3, transition = 25, alternate = false } = defaultSprites[currentSprite];
-
     spriteASet({
       shadow: null,
       height: 0,
-      width: 0
+      width: 0,
     });
     spriteBSet({
       shadow: null,
       height: 0,
-      width: 0
+      width: 0,
     });
 
     scaleSet(defaultSprites[currentSprite].scale || 3);
@@ -245,7 +214,7 @@ function App() {
       scale,
       sortMethod,
       translationX: totalWidth / -2,
-      translationY: totalHeight / -2
+      translationY: totalHeight / -2,
     })};
   }
   ${50 + animationTransition / 2}%, 100% {
@@ -253,7 +222,7 @@ function App() {
       scale,
       sortMethod,
       translationX: totalWidth / -2,
-      translationY: totalHeight / -2
+      translationY: totalHeight / -2,
     })};
   }
 }
@@ -261,7 +230,9 @@ function App() {
 .pixel {
   height: ${scale}px;
   width: ${scale}px;
-  margin: ${-scale}px ${totalHeight + scale * 2}px ${totalWidth + scale * 2}px ${-scale}px;
+  margin: ${-scale}px ${totalHeight + scale * 2}px ${
+    totalWidth + scale * 2
+  }px ${-scale}px;
   animation: morphin ${animationSpeed}ms infinite${
     alternateAnimation ? ' alternate ' : ' '
   }cubic-bezier(0.45, 0, 0.55, 1);
@@ -280,10 +251,7 @@ function App() {
 
     fr.onload = async (data) => {
       const base64src = data.currentTarget.result;
-
-      const [base64] = await resizeImage(base64src);
-
-      saveFrame(base64, { scale, reverse }, setFunction);
+      saveFrame(base64src, { scale, reverse }, setFunction);
     };
     fr.readAsDataURL(file);
   }
@@ -299,8 +267,8 @@ function App() {
       <MainHeader>morphin</MainHeader>
       <Space h={1} />
       <Text>
-        Tool that creates animated CSS transitions. Add sprites and get the code ready to paste in
-        your site.
+        Tool that creates animated CSS transitions. Add sprites and get the code
+        ready to paste in your site.
       </Text>
       <Space h={2} />
       <Tabs>
@@ -335,7 +303,7 @@ function App() {
               width: 48,
               alignItems: 'center',
               alignContent: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
             }}
           >
             <Sprite
@@ -369,7 +337,7 @@ function App() {
               width: 48,
               alignItems: 'center',
               alignContent: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
             }}
           >
             <Sprite
@@ -457,7 +425,8 @@ function App() {
 
         <Box flex={1} padding={[0.5, 1]} minWidth={'240px'}>
           <Text>
-            Transition <span style={{ color: '#666' }}>{animationTransition}%</span>
+            Transition{' '}
+            <span style={{ color: '#666' }}>{animationTransition}%</span>
           </Text>
           <Space h={1} />
           <Range
@@ -490,7 +459,12 @@ function App() {
       <HeaderH3>Code</HeaderH3>
       <Space h={1} />
       <code>
-        <Code aria-label="Generated code" onChange={() => {}} className="code" value={css} />
+        <Code
+          aria-label="Generated code"
+          onChange={() => {}}
+          className="code"
+          value={css}
+        />
       </code>
       <Space h={1} />
       {navigator && navigator.clipboard && navigator.clipboard.writeText && (
@@ -508,23 +482,7 @@ function App() {
         <A href="https://javier.xyz/img2css/">img2css</A>.
       </Text>
       <Space h={2} />
-      <Text>More unrelated experiments</Text>
-      <Space h={0.5} />
-      <Text>
-        <Ul>
-          <Li>
-            {'Create more cohesive color schemes, '}
-            <A href="https://javier.xyz/cohesive-colors/">cohesive-colors</A>.
-          </Li>
-          <Li>
-            Find the visual center of your images / logos,{' '}
-            <A href="https://javier.xyz/visual-center/">visual-center</A>.
-          </Li>
-          <Li>
-            JS AI Battle Game, <A href="https://clashjs.com/">clashjs</A>.
-          </Li>
-        </Ul>
-      </Text>
+      <MoreExperiments />
       <Space h={2} />
       <Text>
         Made by <A href="https://javier.xyz">javierbyte</A>.
