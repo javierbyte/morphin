@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import _ from 'lodash';
-import Styled from 'styled-components';
 import compressColorRGB from './lib/compress-color.js';
 
 import { imageToRGBArray } from 'canvas-image-utils';
@@ -9,7 +8,6 @@ import { imageToRGBArray } from 'canvas-image-utils';
 import MoreExperiments from './MoreExperiments.jsx';
 
 import {
-  JBX,
   Button,
   Range,
   MainHeader,
@@ -26,17 +24,20 @@ import {
   Inline,
   Tabs,
   Tab,
-  Code,
+  CodeSnippet,
+  Component,
 } from 'jbx';
 
-const Sprite = Styled.img(({ width, height }) => {
-  return {
+export const Sprite = Component(
+  `jbx-img`,
+  ({ height, width }) => ({
     height: (28 / Math.max(height, width)) * height,
     width: (28 / Math.max(height, width)) * width,
     display: 'block',
     imageRendering: 'pixelated',
-  };
-});
+  }),
+  { element: 'img' }
+);
 
 const LOG_SCALE_FACTOR = 2.2;
 
@@ -263,7 +264,6 @@ function App() {
 
   return (
     <Container>
-      <JBX accent={'#ab99cf'} />
       <MainHeader>morphin</MainHeader>
       <Space h={1} />
       <Text>
@@ -459,7 +459,7 @@ function App() {
       <HeaderH3>Code</HeaderH3>
       <Space h={1} />
       <code>
-        <Code
+        <CodeSnippet
           aria-label="Generated code"
           onChange={() => {}}
           className="code"
