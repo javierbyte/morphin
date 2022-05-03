@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/morphin/static/css/main.4b58fc7d.css",
-    "main.js": "/morphin/static/js/main.b8b23a97.js",
+    "main.css": "/morphin/static/css/main.dd052b65.css",
+    "main.js": "/morphin/static/js/main.d7e3ca94.js",
     "index.html": "/morphin/index.html",
-    "main.4b58fc7d.css.map": "/morphin/static/css/main.4b58fc7d.css.map",
-    "main.b8b23a97.js.map": "/morphin/static/js/main.b8b23a97.js.map"
+    "main.dd052b65.css.map": "/morphin/static/css/main.dd052b65.css.map",
+    "main.d7e3ca94.js.map": "/morphin/static/js/main.d7e3ca94.js.map"
   },
   "entrypoints": [
-    "static/css/main.4b58fc7d.css",
-    "static/js/main.b8b23a97.js"
+    "static/css/main.dd052b65.css",
+    "static/js/main.d7e3ca94.js"
   ]
 }
