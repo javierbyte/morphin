@@ -30,12 +30,17 @@ import {
 
 export const Sprite = Component(
   `jbx-img`,
-  ({ height, width }) => ({
-    height: (28 / Math.max(height, width)) * height,
-    width: (28 / Math.max(height, width)) * width,
-    display: 'block',
-    imageRendering: 'pixelated',
-  }),
+  ({ height, width }) => {
+    // Sprites start out 0x0, and 28 / 0 * 0 is NaN.
+    const largestSide = Math.max(height, width);
+
+    return {
+      height: largestSide ? (28 / largestSide) * height : undefined,
+      width: largestSide ? (28 / largestSide) * width : undefined,
+      display: 'block',
+      imageRendering: 'pixelated',
+    };
+  },
   { element: 'img' }
 );
 
@@ -123,7 +128,9 @@ function rgbArrayToShadow(rgbArray, { sortMethod = 'Brightness', scale = 1 }) {
 }
 
 async function saveFrame(path, config, stateSet) {
-  const rgbArray = await imageToRGBArray(path, { maxSize: 32 });
+  // `crop` would square-crop and upscale small sprites to `maxSize` with
+  // canvas smoothing on, blurring the pixels we are trying to preserve.
+  const rgbArray = await imageToRGBArray(path, { maxSize: 32, crop: false });
 
   const maxY = rgbArray.reduce((res, rgb) => {
     return Math.max(res, rgb.y);
@@ -174,12 +181,12 @@ function App() {
     if (!currentSprite) return;
 
     saveFrame(
-      `${document.location.href}/sprites/${defaultSprites[currentSprite].sprites[0]}`,
+      `${import.meta.env.BASE_URL}sprites/${defaultSprites[currentSprite].sprites[0]}`,
       { scale },
       spriteASet
     );
     saveFrame(
-      `${document.location.href}/sprites/${defaultSprites[currentSprite].sprites[1]}`,
+      `${import.meta.env.BASE_URL}sprites/${defaultSprites[currentSprite].sprites[1]}`,
       { scale },
       spriteBSet
     );

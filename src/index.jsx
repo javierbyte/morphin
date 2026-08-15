@@ -1,3 +1,4 @@
+import 'jbx/main.css';
 import './style.css';
 
 import React from 'react';
