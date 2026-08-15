@@ -5,7 +5,6 @@ import compressColorRGB from './lib/compress-color.js';
 
 import { imageToRGBArray } from 'canvas-image-utils';
 
-import MoreExperiments from './MoreExperiments.jsx';
 
 import {
   Button,
@@ -17,8 +16,6 @@ import {
   Space,
   Box,
   A,
-  Ul,
-  Li,
   Container,
   Dropzone,
   Inline,
@@ -26,6 +23,7 @@ import {
   Tab,
   CodeSnippet,
   Component,
+  MoreExperiments,
 } from 'jbx';
 
 export const Sprite = Component(
@@ -489,7 +487,7 @@ function App() {
         <A href="https://javier.xyz/img2css/">img2css</A>.
       </Text>
       <Space h={2} />
-      <MoreExperiments />
+      <MoreExperiments exclude="morphin" />
       <Space h={2} />
       <Text>
         Made by <A href="https://javier.xyz">javierbyte</A>.
