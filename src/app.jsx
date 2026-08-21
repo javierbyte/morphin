@@ -484,7 +484,7 @@ function App() {
       <Space h={2} />
       <Text>
         For a simpler image to box-shadow conversion, see{' '}
-        <A href="https://javier.xyz/img2css/">img2css</A>.
+        <A href="https://javier.xyz/img2css">img2css</A>.
       </Text>
       <Space h={2} />
       <MoreExperiments exclude="morphin" />
