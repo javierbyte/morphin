@@ -1,30 +1,29 @@
-import React, { useEffect, useState } from 'react';
+'use client';
+
+import { useEffect, useState } from 'react';
 
 import _ from 'lodash';
-import compressColorRGB from './lib/compress-color.js';
 
 import { imageToRGBArray } from 'canvas-image-utils';
-
 
 import {
   Button,
   Range,
-  MainHeader,
   HeaderH3,
   HeaderH2,
   Text,
   Space,
   Box,
-  A,
-  Container,
   Dropzone,
   Inline,
   Tabs,
   Tab,
   CodeSnippet,
   Component,
-  MoreExperiments,
 } from 'jbx';
+
+import compressColorRGB from '@/lib/compress-color.js';
+import { BASE_PATH } from '@/lib/basePath.js';
 
 export const Sprite = Component(
   `jbx-img`,
@@ -151,7 +150,7 @@ async function saveFrame(path, config, stateSet) {
   });
 }
 
-function App() {
+export default function MorphinApp() {
   const [animationSpeedSrc, animationSpeedSet] = useState(
     Math.round(Math.pow(1000, 1 / LOG_SCALE_FACTOR))
   );
@@ -179,12 +178,12 @@ function App() {
     if (!currentSprite) return;
 
     saveFrame(
-      `${import.meta.env.BASE_URL}sprites/${defaultSprites[currentSprite].sprites[0]}`,
+      `${BASE_PATH}/sprites/${defaultSprites[currentSprite].sprites[0]}`,
       { scale },
       spriteASet
     );
     saveFrame(
-      `${import.meta.env.BASE_URL}sprites/${defaultSprites[currentSprite].sprites[1]}`,
+      `${BASE_PATH}/sprites/${defaultSprites[currentSprite].sprites[1]}`,
       { scale },
       spriteBSet
     );
@@ -268,14 +267,7 @@ function App() {
   }
 
   return (
-    <Container>
-      <MainHeader>morphin</MainHeader>
-      <Space h={1} />
-      <Text>
-        Tool that creates animated CSS transitions. Add sprites and get the code
-        ready to paste in your site.
-      </Text>
-      <Space h={2} />
+    <>
       <Tabs>
         <Inline>
           <Tab info>
@@ -472,28 +464,13 @@ function App() {
         />
       </code>
       <Space h={1} />
-      {navigator && navigator.clipboard && navigator.clipboard.writeText && (
-        <Button
-          onClick={() => {
-            navigator.clipboard.writeText(css);
-          }}
-        >
-          Copy Code
-        </Button>
-      )}
-      <Space h={2} />
-      <Text>
-        For a simpler image to box-shadow conversion, see{' '}
-        <A href="https://javier.xyz/img2css">img2css</A>.
-      </Text>
-      <Space h={2} />
-      <MoreExperiments exclude="morphin" />
-      <Space h={2} />
-      <Text>
-        Made by <A href="https://javier.xyz">javierbyte</A>.
-      </Text>
-    </Container>
+      <Button
+        onClick={() => {
+          navigator.clipboard?.writeText(css);
+        }}
+      >
+        Copy Code
+      </Button>
+    </>
   );
 }
-
-export default App;

@@ -5,9 +5,9 @@
   "type": "module",
   "packageManager": "pnpm@11.21.0",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "next dev -p 3004",
+    "build": "next build",
+    "start": "next start"
   },
   "repository": {
     "type": "git",
@@ -28,14 +28,12 @@
   },
   "homepage": "https://javier.xyz/morphin",
   "dependencies": {
+    "@next/third-parties": "^16.3.2",
     "canvas-image-utils": "^2.5.0",
-    "jbx": "^2.12.0",
+    "jbx": "^2.14.0",
     "lodash": "^4.18.1",
+    "next": "^16.3.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^6.0.5",
-    "vite": "^8.2.1"
   }
 }
