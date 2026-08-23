@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import _ from 'lodash';
 
@@ -23,6 +23,7 @@ import {
 } from 'jbx';
 
 import compressColorRGB from '@/lib/compress-color.js';
+import smartMatch, { phantomOf } from '@/lib/smart-match.js';
 import { BASE_PATH } from '@/lib/basePath.js';
 
 export const Sprite = Component(
@@ -47,6 +48,7 @@ const defaultSprites = {
   Yoshi: {
     name: 'Yoshi',
     sprites: ['yoshi1.png', 'yoshi2.png'],
+    sortMethod: 'Smart',
   },
   '3 Dots': {
     name: '3 Dots',
@@ -80,47 +82,101 @@ const defaultSprites = {
   },
 };
 
-const SORT_METHODS = {
-  Diagonal: [
-    (color) => {
-      return Math.floor((color.x - color.y) / 3);
-    },
-    (color) => {
-      return color.rgb.r + color.rgb.g + color.rgb.b;
-    },
-  ],
-  Vertical: [
-    (color) => {
-      return color.x;
-    },
-  ],
-  Horizontal: [
-    (color) => {
-      return color.y;
-    },
-  ],
-  Brightness: [
-    (color) => {
-      return Math.floor((color.rgb.r + color.rgb.g + color.rgb.b) / 2);
-    },
-  ],
+// A frame becomes one `box-shadow` list per keyframe, and the browser tweens
+// shadow *i* of the first list into shadow *i* of the second. So a matching
+// method's whole job is to decide the order of the two lists. `sortKeys` methods
+// sort each frame on its own and let the indexes line up wherever they land;
+// `match` methods get both frames and pair the pixels off deliberately.
+const MATCH_METHODS = {
+  Smart: {
+    match: smartMatch,
+  },
+  Diagonal: {
+    sortKeys: [
+      (color) => {
+        return Math.floor((color.x - color.y) / 3);
+      },
+      (color) => {
+        return color.rgb.r + color.rgb.g + color.rgb.b;
+      },
+    ],
+  },
+  Vertical: {
+    sortKeys: [
+      (color) => {
+        return color.x;
+      },
+    ],
+  },
+  Horizontal: {
+    sortKeys: [
+      (color) => {
+        return color.y;
+      },
+    ],
+  },
+  Brightness: {
+    sortKeys: [
+      (color) => {
+        return Math.floor((color.rgb.r + color.rgb.g + color.rgb.b) / 2);
+      },
+    ],
+  },
 };
 
-function rgbArrayToShadow(rgbArray, { sortMethod = 'Brightness', scale = 1 }) {
-  return _.chain(rgbArray)
-    .filter((pixel) => {
-      return !(
-        pixel.rgb.a < 1 ||
-        (pixel.rgb.r > 254 && pixel.rgb.g > 254 && pixel.rgb.b > 254)
-      );
-    })
-    .sortBy(SORT_METHODS[sortMethod])
+// Drops what should not be drawn: fully transparent pixels, and near-white ones
+// on the assumption they are background. `rgbArray` is undefined until a sprite
+// finishes loading.
+function visiblePixels(rgbArray) {
+  return (rgbArray || []).filter((pixel) => {
+    return !(
+      pixel.rgb.a < 1 ||
+      (pixel.rgb.r > 254 && pixel.rgb.g > 254 && pixel.rgb.b > 254)
+    );
+  });
+}
+
+function sortMatch(pixelsA, pixelsB, sortKeys) {
+  const sortedA = _.sortBy(pixelsA, sortKeys);
+  const sortedB = _.sortBy(pixelsB, sortKeys);
+  const paired = Math.min(sortedA.length, sortedB.length);
+
+  const orderedA = sortedA.slice(0, paired);
+  const orderedB = sortedB.slice(0, paired);
+
+  // Left the browser to its own devices, the shorter list gets padded with
+  // `transparent 0 0 0` and the surplus pixels streak to the element's origin.
+  // Giving them a transparent partner in place fades them out where they are.
+  sortedA.slice(paired).forEach((pixel) => {
+    orderedA.push(pixel);
+    orderedB.push(phantomOf(pixel));
+  });
+  sortedB.slice(paired).forEach((pixel) => {
+    orderedA.push(phantomOf(pixel));
+    orderedB.push(pixel);
+  });
+
+  return [orderedA, orderedB];
+}
+
+function matchPixels(rgbArrayA, rgbArrayB, sortMethod) {
+  const method = MATCH_METHODS[sortMethod] || MATCH_METHODS.Smart;
+  const pixelsA = visiblePixels(rgbArrayA);
+  const pixelsB = visiblePixels(rgbArrayB);
+
+  const [orderedA, orderedB] = method.match
+    ? method.match(pixelsA, pixelsB)
+    : sortMatch(pixelsA, pixelsB, method.sortKeys);
+
+  return { pixelsA: orderedA, pixelsB: orderedB };
+}
+
+function pixelsToShadow(pixels, scale) {
+  return pixels
     .map((pixel) => {
       const color = compressColorRGB(pixel.rgb);
       return `${color} ${(pixel.x + 1) * scale}px ${(pixel.y + 1) * scale}px`;
     })
-    .compact()
-    .value()
     .join(',');
 }
 
@@ -160,7 +216,7 @@ export default function MorphinApp() {
   const [alternateAnimation, alternateAnimationSet] = useState(true);
 
   const [currentSprite, currentSpriteSet] = useState('Yoshi');
-  const [sortMethod, sortMethodSet] = useState('Vertical');
+  const [sortMethod, sortMethodSet] = useState('Smart');
   const [scale, scaleSet] = useState(5);
 
   const [spriteA, spriteASet] = useState({
@@ -212,23 +268,28 @@ export default function MorphinApp() {
   const totalWidth = Math.max(spriteA.width, spriteB.width) * scale;
   const totalHeight = Math.max(spriteA.height, spriteB.height) * scale;
 
+  // Matching is the expensive half and only depends on the sprites, so it is
+  // kept clear of the sliders — dragging Scale only redoes the stringifying.
+  const pairing = useMemo(
+    () => matchPixels(spriteA.rgbArray, spriteB.rgbArray, sortMethod),
+    [spriteA.rgbArray, spriteB.rgbArray, sortMethod]
+  );
+  const shadowA = useMemo(
+    () => pixelsToShadow(pairing.pixelsA, scale),
+    [pairing, scale]
+  );
+  const shadowB = useMemo(
+    () => pixelsToShadow(pairing.pixelsB, scale),
+    [pairing, scale]
+  );
+
   const css = `
 @keyframes morphin {
   0%, ${50 - animationTransition / 2}% {
-    box-shadow: ${rgbArrayToShadow(spriteA.rgbArray, {
-      scale,
-      sortMethod,
-      translationX: totalWidth / -2,
-      translationY: totalHeight / -2,
-    })};
+    box-shadow: ${shadowA};
   }
   ${50 + animationTransition / 2}%, 100% {
-    box-shadow: ${rgbArrayToShadow(spriteB.rgbArray, {
-      scale,
-      sortMethod,
-      translationX: totalWidth / -2,
-      translationY: totalHeight / -2,
-    })};
+    box-shadow: ${shadowB};
   }
 }
 
@@ -365,7 +426,7 @@ export default function MorphinApp() {
           <Tab info>
             <Text>Pixel matching method:</Text>
           </Tab>
-          {Object.keys(SORT_METHODS).map((sortMethodKey) => (
+          {Object.keys(MATCH_METHODS).map((sortMethodKey) => (
             <Tab
               active={sortMethod === sortMethodKey}
               key={sortMethodKey}
